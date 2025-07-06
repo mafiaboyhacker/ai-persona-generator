@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Persona Generator</title>
+    <link rel="stylesheet" href="style-advanced.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-controls">
+                <div class="theme-controls">
+                    <button id="theme-toggle" class="theme-toggle-btn" aria-label="테마 변경">
+                        <span class="theme-icon">🌙</span>
+                    </button>
+                    <div class="accessibility-menu hidden" id="accessibility-menu">
+                        <button class="accessibility-btn" data-action="reduce-motion">애니메이션 줄이기</button>
+                        <button class="accessibility-btn" data-action="high-contrast">고대비 모드</button>
+                        <button class="accessibility-btn" data-action="large-text">큰 글자</button>
+                    </div>
+                    <button id="accessibility-toggle" class="accessibility-toggle-btn" aria-label="접근성 옵션">
+                        <span>⚙️</span>
+                    </button>
+                </div>
+            </div>
+            <div class="logo">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="20" cy="20" r="18" stroke="url(#gradient)" stroke-width="2"/>
+                    <circle cx="20" cy="20" r="8" fill="url(#gradient)"/>
+                    <defs>
+                        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#ff6b6b"/>
+                            <stop offset="100%" style="stop-color:#ffd93d"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <h1>AI Persona Generator</h1>
+            </div>
+            <p>Stop fighting your tools. 강력한 AI로 독특한 페르소나를 만들어보세요</p>
+        </header>
+        
+        <main>
+            <section id="input-form" class="input-form-section glass-primary neon-border">
+                <h2>AI 페르소나 생성하기</h2>
+                <form id="persona-form" class="persona-form">
+                    <div class="form-group">
+                        <label for="persona_type">페르소나 유형:</label>
+                        <select id="persona_type" name="persona_type" required class="neon-focus">
+                            <option value="">선택하세요</option>
+                            <option value="AI 인플루언서">AI 인플루언서</option>
+                            <option value="AI 배우">AI 배우</option>
+                            <option value="AI 가수">AI 가수</option>
+                            <option value="AI 모델">AI 모델</option>
+                            <option value="AI 버튜버">AI 버튜버</option>
+                            <option value="기타">기타</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="desired_style">원하는 스타일:</label>
+                        <textarea id="desired_style" name="desired_style" class="neon-focus" placeholder="예: 도회적이고 세련된, 한예슬 초창기 느낌의 AI 인플루언서. 겉으로는 도도하고 거리감 있지만 마음을 열면 따뜻한 성격. 패션과 뷰티에 관심이 많고..." rows="4" required></textarea>
+                    </div>
+                    
+                    <!-- 숨겨진 상세도 수준 (상세로 고정) -->
+                    <input type="hidden" name="output_detail_level" value="상세">
+                    
+                    <!-- 고급 설정 -->
+                    <div class="form-group">
+                        <button type="button" id="toggle-advanced" class="toggle-advanced-btn neon-border">
+                            고급 설정 <span id="advanced-arrow">▼</span>
+                        </button>
+                        <div id="advanced-settings" class="advanced-settings collapsible-section collapsed">
+                            <div class="advanced-row">
+                                <div class="form-group">
+                                    <label for="fal_model">Fal.ai 모델:</label>
+                                    <select id="fal_model" name="fal_model">
+                                        <option value="flux-pro">FLUX.1 Pro v1.1 (권장)</option>
+                                        <option value="flux-dev">FLUX.1 Dev</option>
+                                        <option value="flux-schnell">FLUX.1 Schnell</option>
+                                        <option value="flux-lora">FLUX.1 with LoRA</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="lora_model">LoRA 모델:</label>
+                                    <select id="lora_model" name="lora_model">
+                                        <option value="none">None</option>
+                                        <!-- LoRA 옵션들이 JavaScript로 동적 로드됩니다 -->
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="advanced-row">
+                                <div class="form-group">
+                                    <label for="seed">Seed 값:</label>
+                                    <input type="number" id="seed" name="seed" placeholder="랜덤 생성 (비워두면 자동)">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="keep_seed" name="keep_seed">
+                                        <span class="checkbox-custom"></span>
+                                        Seed 값 유지
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="advanced-row single-column">
+                                <div class="form-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="allow_nsfw_image" name="allow_nsfw_image">
+                                        <span class="checkbox-custom"></span>
+                                        NSFW 이미지 생성 허용 (성인 콘텐츠 포함 가능성)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button type="submit" id="generate-btn" class="generate-btn btn-clay">페르소나 생성</button>
+                        <button type="button" id="random-generate-btn" class="random-btn btn-clay">🎲 랜덤 생성</button>
+                    </div>
+                </form>
+                
+                <div id="loading-indicator" class="loading-indicator hidden">
+                    <div class="spinner"></div>
+                    <p>AI 페르소나를 생성하는 중...</p>
+                </div>
+            </section>
+            
+            <section id="output-results" class="output-results-section hidden">
+                <h2>생성된 AI 페르소나</h2>
+                <div class="results-container">
+                    <div class="profile-section">
+                        <div class="profile-header">
+                            <h3>페르소나 프로필</h3>
+                            <div class="profile-actions">
+                                <button id="save-profile-btn" class="action-btn save-btn neon-border">저장</button>
+                                <button id="download-pdf-btn" class="action-btn download-btn neon-border">PDF 다운로드</button>
+                                <button id="open-sidebar-btn" class="action-btn sidebar-btn neon-border">📋 저장된 프로필</button>
+                            </div>
+                        </div>
+                        <div id="persona-profile-text" class="persona-profile-text">
+                            <!-- 생성된 마크다운 텍스트가 여기에 렌더링됩니다 -->
+                        </div>
+                    </div>
+                    
+                    <div class="image-section">
+                        <div class="image-header">
+                            <h3>생성된 이미지</h3>
+                        </div>
+                        
+                        <!-- 이미지 갤러리 -->
+                        <div id="image-gallery" class="image-gallery">
+                            <div id="persona-image-container" class="persona-image-container active">
+                                <img id="persona-image" src="" alt="생성된 페르소나 이미지" style="display: none;">
+                                <div class="image-placeholder">
+                                    <p>이미지가 생성되면 여기에 표시됩니다</p>
+                                </div>
+                                <div class="image-label">원본</div>
+                            </div>
+                        </div>
+                        
+                        <!-- 이미지 네비게이션 -->
+                        <div id="image-navigation" class="image-navigation hidden">
+                            <button id="prev-image-btn" class="nav-btn">◀</button>
+                            <span id="image-counter">1 / 1</span>
+                            <button id="next-image-btn" class="nav-btn">▶</button>
+                        </div>
+                        
+                        <div class="image-prompt-section">
+                            <h4>이미지 생성 프롬프트</h4>
+                            <div class="prompt-container">
+                                <textarea id="image-prompt" class="prompt-textarea" placeholder="이미지 프롬프트가 여기에 표시됩니다..." rows="4"></textarea>
+                                <button id="regenerate-image-btn" class="action-btn regenerate-btn">이미지 재생성</button>
+                            </div>
+                            
+                            <!-- 이미지 재생성 설정 패널 -->
+                            <div id="regenerate-settings" class="regenerate-settings hidden">
+                                <h5>재생성 설정</h5>
+                                <div class="regenerate-row">
+                                    <div class="form-group">
+                                        <label for="regen-fal-model">모델:</label>
+                                        <select id="regen-fal-model" name="regen-fal-model">
+                                            <option value="flux-pro">FLUX.1 Pro v1.1 (권장)</option>
+                                            <option value="flux-dev">FLUX.1 Dev</option>
+                                            <option value="flux-schnell">FLUX.1 Schnell</option>
+                                            <option value="flux-lora">FLUX.1 with LoRA</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="regen-lora-model">LoRA:</label>
+                                        <select id="regen-lora-model" name="regen-lora-model">
+                                            <option value="none">None</option>
+                                            <option value="realistic-portrait">Realistic Portrait</option>
+                                            <option value="photography">Professional Photography</option>
+                                            <option value="hyperrealism">Hyperrealism</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="regenerate-row">
+                                    <div class="form-group">
+                                        <label for="regen-seed">Seed:</label>
+                                        <input type="number" id="regen-seed" name="regen-seed" placeholder="새로운 Seed (비워두면 랜덤)">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="regen-nsfw" name="regen-nsfw">
+                                            <span class="checkbox-custom"></span>
+                                            NSFW 허용
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="regenerate-actions">
+                                    <button id="confirm-regenerate-btn" class="action-btn confirm-btn">확인</button>
+                                    <button id="cancel-regenerate-btn" class="action-btn cancel-btn">취소</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="image-info-section">
+                            <h4>이미지 정보</h4>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <label>모델:</label>
+                                    <span id="used-model">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <label>LoRA:</label>
+                                    <span id="used-lora">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <label>Seed:</label>
+                                    <span id="used-seed">-</span>
+                                    <button id="copy-seed-btn" class="copy-btn" title="Seed 복사">📋</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 저장된 프로필 사이드바 -->
+            <div id="saved-profiles-sidebar" class="saved-profiles-sidebar hidden">
+                <div class="sidebar-header">
+                    <h3>저장된 프로필</h3>
+                    <button id="close-sidebar-btn" class="close-btn">×</button>
+                </div>
+                <div id="saved-profiles-list" class="saved-profiles-list">
+                    <!-- 저장된 프로필들이 여기에 표시됩니다 -->
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <footer>
+        <p>© 2025 AI Persona Generator</p>
+    </footer>
+    
+    <script src="script.js"></script>
+</body>
+</html>
