@@ -10,7 +10,7 @@ load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__, static_folder='.')
-CORS(app)
+CORS(app, origins=['http://localhost:3000', 'http://127.0.0.1:3000'])
 
 # Configuration
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-here')
@@ -77,8 +77,16 @@ REFERENCE_PERSONA = """
 
 @app.route('/')
 def home():
-    """Serve the main HTML page"""
-    return send_from_directory('.', 'index.html')
+    """API health check"""
+    return jsonify({
+        'status': 'success',
+        'message': 'AI Persona Generator API is running',
+        'endpoints': [
+            'POST /generate_persona',
+            'POST /generate_random_persona', 
+            'POST /regenerate_image'
+        ]
+    })
 
 @app.route('/api/health')
 def health():
