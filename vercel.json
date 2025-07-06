@@ -19,8 +19,4 @@
       "dest": "/server.py"
     }
   ],
-  "env": {
-    "OPENAI_API_KEY": "@openai_api_key",
-    "FAL_AI_API_KEY": "@fal_ai_api_key"
-  }
 }
