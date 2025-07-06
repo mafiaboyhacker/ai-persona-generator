@@ -16,8 +16,8 @@ CORS(app)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-here')
 
 # API Keys
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-FAL_AI_API_KEY = os.getenv('FAL_AI_API_KEY')
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY') or os.getenv('OPENAI_KEY')
+FAL_AI_API_KEY = os.getenv('FAL_AI_API_KEY') or os.getenv('FAL_KEY')
 
 # Load system prompt files
 def load_system_prompt():
