@@ -19,6 +19,11 @@ export function PersonaGeneratorSection() {
     allowNsfw: false
   })
 
+  // API 기본 URL (환경에 따라 자동 설정)
+  const API_BASE_URL = process.env.NODE_ENV === 'production' 
+    ? process.env.NEXT_PUBLIC_API_URL || 'https://ai-persona-generator-production.railway.app'
+    : 'http://localhost:5000'
+
   const handleGenerate = async () => {
     if (!formData.personaType || !formData.desiredStyle) return
     
@@ -29,7 +34,7 @@ export function PersonaGeneratorSection() {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 60000) // 60초 타임아웃
       
-      const response = await fetch('http://localhost:5000/generate_persona', {
+      const response = await fetch(`${API_BASE_URL}/generate_persona`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -78,7 +83,7 @@ export function PersonaGeneratorSection() {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 60000) // 60초 타임아웃
       
-      const response = await fetch('http://localhost:5000/generate_random_persona', {
+      const response = await fetch(`${API_BASE_URL}/generate_random_persona`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
