@@ -301,42 +301,44 @@ def generate_random_persona_params():
         print("🎲 OpenAI를 사용하여 랜덤 파라미터 생성 중...")
         # System message for random persona generation
         system_message = """
-You are a creative AI persona generator. Create completely random and unique persona parameters that would result in interesting, diverse, and compelling AI characters.
+당신은 창의적인 AI 페르소나 생성기입니다. 흥미롭고 다양하며 매력적인 AI 캐릭터를 만들어내는 완전히 랜덤하고 독특한 페르소나 파라미터를 생성하세요.
 
-Your task is to generate:
-1. A random persona type
-2. A detailed and creative style description
-3. An appropriate detail level
+당신의 작업은 다음을 생성하는 것입니다:
+1. 랜덤한 페르소나 유형 (한국어로)
+2. 상세하고 창의적인 스타일 설명 (한국어로)
+3. 적절한 세부 수준 (한국어로)
+4. 정말 리얼리티 있는 페르소나 프로필 생성 (한국어로)
 
-Be creative and diverse in your choices. Include different:
-- Ethnicities and cultural backgrounds
-- Age ranges (18-35)
-- Professions and interests
-- Personality types
-- Visual styles
-- Unique characteristics
+다양한 선택을 하여 창의적이고 다양하게 만드세요:
+- 다양한 민족과 문화적 배경
+- 연령대 (18-35세)
+- 직업과 관심사
+- 성격 유형
+- 시각적 스타일
+- 독특한 특성
 
-Output your response in this exact JSON format:
+응답은 반드시 이 JSON 형식으로 출력하세요:
 {
-    "persona_type": "string",
-    "desired_style": "string", 
-    "output_detail_level": "string"
+    "persona_type": "string (한국어)",
+    "desired_style": "string (한국어로 상세한 설명)", 
+    "output_detail_level": "상세"
 }
 
-Make the desired_style very detailed and specific, including personality traits, visual characteristics, background story elements, and unique quirks.
+desired_style은 매우 상세하고 구체적으로 작성하되, 성격적 특성, 시각적 특성, 배경 스토리 요소, 독특한 특징을 모두 포함하세요. 이미지 생성 프롬프트는 포함하지 마세요.
 """
 
         user_prompt = """
-Generate a completely random and creative AI persona with unique characteristics. 
-Make it interesting, diverse, and compelling. Include specific details about:
-- Cultural background and ethnicity
-- Age and profession
-- Personality traits and quirks
-- Visual style and fashion sense
-- Interests and hobbies
-- Background story elements
+독특한 특성을 가진 완전히 랜덤하고 창의적인 AI 페르소나를 생성하세요. 
+흥미롭고 다양하며 매력적으로 만드세요. 다음에 대한 구체적인 세부사항을 포함하세요:
+- 문화적 배경과 민족성
+- 나이와 직업
+- 성격 특성과 특이한 점
+- 시각적 스타일과 패션 감각
+- 관심사와 취미
+- 배경 스토리 요소
 
-Be very creative and don't use generic descriptions. Make each persona truly unique and memorable.
+매우 창의적이고 일반적이지 않은 설명을 사용하세요. 각 페르소나를 정말 독특하고 기억에 남도록 만드세요.
+모든 설명은 한국어로 작성하고, 이미지 생성용 프롬프트는 포함하지 마세요.
 """
 
         # OpenAI API call
@@ -519,7 +521,7 @@ def generate_persona_profile_with_openai(persona_type, desired_style, output_det
         if allow_nsfw_image:
             nsfw_instruction = """
 - NSFW 이미지 생성 허용: 예 (성인 콘텐츠 포함 가능, 단 윤리적 경계 준수)
-- 이미지 프롬프트에 성인 콘텐츠 요소를 포함할 수 있으나, 불법적이거나 비동의적인 콘텐츠는 절대 금지
+- 이미지 프롬프트에 성인 콘텐츠 요소를 포함할 수 있으나, NSFW 이미지 생성 가능
 """
         else:
             nsfw_instruction = """
@@ -647,10 +649,11 @@ def generate_persona_image_with_fal(image_prompt, allow_nsfw_image, fal_model='f
             'Content-Type': 'application/json'
         }
         
-        # Enhanced prompt for hyperrealistic results
+        # Enhanced prompt for face-focused realistic portraits
+        face_focus_keywords = "face portrait, head and shoulders, close-up face, detailed facial features, expressive eyes, beautiful face, facial close-up"
         realism_keywords = "hyperrealistic, photorealistic, ultra realistic, 8k uhd, professional photography, DSLR camera, cinematic lighting, sharp focus, detailed skin texture, natural lighting, high resolution, lifelike, studio quality, perfect anatomy, realistic proportions"
         quality_keywords = "masterpiece, best quality, highly detailed, award winning photography, professional portrait"
-        enhanced_prompt = f"{image_prompt}, {realism_keywords}, {quality_keywords}"
+        enhanced_prompt = f"{face_focus_keywords}, {image_prompt}, {realism_keywords}, {quality_keywords}"
         
         # Configure safety checker based on NSFW allowance
         enable_safety_checker = not allow_nsfw_image
@@ -662,7 +665,7 @@ def generate_persona_image_with_fal(image_prompt, allow_nsfw_image, fal_model='f
         # Base payload with optimized settings for realism
         payload = {
             'prompt': enhanced_prompt,
-            'image_size': 'portrait_4_3',  # Better for person portraits
+            'image_size': 'landscape_4_3',  # Horizontal layout for better face visibility
             'num_inference_steps': 35,     # More steps for better quality
             'guidance_scale': 4.0,         # Higher guidance for realism
             'num_images': 1,

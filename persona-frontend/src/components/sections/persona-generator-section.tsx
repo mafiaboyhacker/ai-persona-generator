@@ -280,9 +280,16 @@ export function PersonaGeneratorSection() {
                   
                   <div className="prose prose-invert max-w-none">
                     <div 
-                      className="text-sm leading-relaxed"
+                      className="text-sm leading-relaxed whitespace-pre-wrap"
                       dangerouslySetInnerHTML={{ 
-                        __html: generatedPersona.profile?.replace(/\n/g, '<br>') || '' 
+                        __html: generatedPersona.profile
+                          ?.replace(/^# (.+)$/gm, '<h1 class="text-xl font-bold text-purple-300 mb-3 mt-4">$1</h1>')
+                          ?.replace(/^## (.+)$/gm, '<h2 class="text-lg font-semibold text-purple-400 mb-2 mt-4">$1</h2>')
+                          ?.replace(/^### (.+)$/gm, '<h3 class="text-base font-medium text-purple-500 mb-2 mt-3">$1</h3>')
+                          ?.replace(/\*\*(.+?)\*\*/g, '<strong class="text-white font-semibold">$1</strong>')
+                          ?.replace(/^- (.+)$/gm, '<div class="text-gray-300 mb-1">• $1</div>')
+                          ?.replace(/\n\n/g, '<br><br>')
+                          ?.replace(/\n/g, '<br>') || '' 
                       }}
                     />
                   </div>
