@@ -10,7 +10,7 @@ load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__, static_folder='.')
-CORS(app, origins=['http://localhost:3000', 'http://127.0.0.1:3000'])
+CORS(app, origins=os.getenv('CORS_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000').split(','))
 
 # Configuration
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-here')
@@ -749,5 +749,8 @@ if __name__ == '__main__':
     print("  POST /generate_random_persona - Generate random AI persona")
     print("  POST /regenerate_image - Regenerate persona image")
     
-    # Run the app
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Run the app with environment-based configuration
+    debug_mode = os.getenv('FLASK_ENV', 'development') == 'development'
+    port = int(os.getenv('PORT', 5000))
+    
+    app.run(debug=debug_mode, host='0.0.0.0', port=port)
