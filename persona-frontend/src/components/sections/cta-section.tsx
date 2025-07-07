@@ -110,7 +110,7 @@ export function CtaSection() {
         >
           <div className="flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-gray-400">
             <div>
-              © 2025 AI Persona Generator. Built with ❤️ using Next.js & OpenAI.
+              © 2025 AI Persona Generator. Persona-LLM and Persona-v.01
             </div>
             <div className="flex gap-6">
               <a href="#" className="hover:text-white transition-colors">Privacy</a>

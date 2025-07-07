@@ -6,6 +6,20 @@ import { NeonButton } from "@/components/ui/neon-button"
 import { Sparkles, Zap, Brain } from "lucide-react"
 
 export function HeroSection() {
+  const scrollToPersonaGenerator = () => {
+    const element = document.getElementById('persona-generator')
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  const scrollToCodeDemo = () => {
+    const element = document.getElementById('code-demo')
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-4">
       {/* Background Effects */}
@@ -30,10 +44,10 @@ export function HeroSection() {
           <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
             Create{" "}
             <span className="neon-text bg-gradient-to-r from-purple-400 to-teal-400 bg-clip-text text-transparent">
-              Limitless
+            AI Personas
             </span>
             <br />
-            AI Personas
+            Persona-LLM and Persona-v.01
           </h1>
           
           <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
@@ -48,11 +62,20 @@ export function HeroSection() {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
         >
-          <NeonButton size="lg" className="text-lg px-8 py-4">
+          <NeonButton 
+            size="lg" 
+            className="text-lg px-8 py-4"
+            onClick={scrollToPersonaGenerator}
+          >
             <Zap className="w-5 h-5" />
             Start Creating
           </NeonButton>
-          <NeonButton variant="ghost" size="lg" className="text-lg px-8 py-4">
+          <NeonButton 
+            variant="ghost" 
+            size="lg" 
+            className="text-lg px-8 py-4"
+            onClick={scrollToCodeDemo}
+          >
             <Brain className="w-5 h-5" />
             See Examples
           </NeonButton>
@@ -70,7 +93,7 @@ export function HeroSection() {
               <Brain className="w-6 h-6 text-purple-400" />
             </div>
             <h3 className="text-lg font-semibold mb-2">AI-Powered</h3>
-            <p className="text-sm text-gray-400">Advanced GPT models create rich, detailed personas</p>
+            <p className="text-sm text-gray-400">Advanced Persona-LLM and v.01 models create rich, detailed personas</p>
           </GlassCard>
 
           <GlassCard className="p-6 text-center hover:scale-105 transition-transform duration-300" glow>

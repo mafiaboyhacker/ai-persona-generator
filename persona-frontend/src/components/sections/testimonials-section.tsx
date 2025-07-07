@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion"
 import { GlassCard } from "@/components/ui/glass-card"
-import { Badge } from "@/components/ui/badge"
 import { Star, Quote } from "lucide-react"
 
 const testimonials = [
@@ -36,8 +35,8 @@ const testimonials = [
 ]
 
 const companies = [
-  { name: "OpenAI", logo: "🤖" },
-  { name: "Vercel", logo: "▲" },
+  { name: "Persona-LLM", logo: "🧠" },
+  { name: "Persona-v.01", logo: "🤖" },
   { name: "GitHub", logo: "🐙" },
   { name: "Anthropic", logo: "🧠" },
   { name: "Hugging Face", logo: "🤗" },
@@ -84,7 +83,7 @@ export function TestimonialsSection() {
                 </div>
                 
                 <p className="text-gray-300 mb-6 leading-relaxed">
-                  "{testimonial.content}"
+                  &ldquo;{testimonial.content}&rdquo;
                 </p>
                 
                 <div className="flex items-center gap-3">

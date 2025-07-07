@@ -1,36 +1,132 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Persona Generator 🎭
 
-## Getting Started
+A modern web application for generating detailed AI personas with realistic images and interactive features.
 
-First, run the development server:
+## 🚀 Features
+
+- **AI Persona Generation**: Create detailed character profiles with personality traits and backgrounds
+- **Image Generation**: Generate realistic persona images using AI models
+- **Interactive Gallery**: Browse and manage saved personas
+- **Video Showcase**: Dynamic video presentation of AI personas
+- **Download System**: Export personas as images, PDFs, or text files
+- **Responsive Design**: Optimized for all devices
+
+## 🛠 Tech Stack
+
+- **Framework**: Next.js 15 with Turbopack
+- **Styling**: Tailwind CSS 4
+- **Animations**: Framer Motion
+- **3D Graphics**: Three.js & React Three Fiber
+- **UI Components**: Radix UI
+- **Icons**: Lucide React
+- **PDF Generation**: jsPDF
+
+## 📦 Installation
 
 ```bash
+# Clone the repository
+git clone <repository-url>
+cd persona-frontend
+
+# Install dependencies
+npm install
+
+# Start development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🌐 Deployment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This project is optimized for deployment on **Vercel**:
 
-## Learn More
+1. Connect your GitHub repository to Vercel
+2. Configure environment variables if needed
+3. Deploy automatically on every push
 
-To learn more about Next.js, take a look at the following resources:
+### Alternative Deployments
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Netlify**: Static site deployment
+- **AWS S3 + CloudFront**: Scalable cloud deployment
+- **GitHub Pages**: Free static hosting
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📁 Project Structure
 
-## Deploy on Vercel
+```
+persona-frontend/
+├── src/
+│   ├── components/
+│   │   ├── ui/           # Reusable UI components
+│   │   └── sections/     # Page sections
+│   ├── app/              # Next.js app directory
+│   └── styles/           # Global styles
+├── public/
+│   ├── gallery/          # Persona images
+│   └── videos/           # Demo videos (8.8MB total)
+└── ...config files
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🎯 Key Components
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **PersonaGeneratorSection**: Main persona creation interface
+- **CodeDemoSection**: Interactive demo with video showcase
+- **GalleryModal**: Persona management and viewing
+- **DownloadSystem**: Multi-format export functionality
+
+## 🔧 Configuration
+
+### Environment Variables
+
+Create a `.env.local` file:
+
+```bash
+# API Configuration (if needed)
+NEXT_PUBLIC_API_URL=your_api_url
+OPENAI_API_KEY=your_openai_key
+FAL_AI_API_KEY=your_fal_ai_key
+```
+
+### Performance Optimizations
+
+- ✅ Image optimization with WebP/AVIF formats
+- ✅ Video lazy loading and compression
+- ✅ CDN caching headers (1 year cache)
+- ✅ CSS and JavaScript minification
+- ✅ Gzip compression enabled
+
+## 📱 Browser Support
+
+- Chrome 90+
+- Firefox 88+
+- Safari 14+
+- Edge 90+
+
+## 🎬 Video Assets
+
+The project includes 3 demo videos:
+- `bella_lipsync.mp4` (2.7MB) - 8 seconds
+- `cinematic_closeup.mp4` (1.4MB) - 8 seconds  
+- `lala.mp4` (4.8MB) - 4 seconds
+
+Videos auto-rotate every 8/4 seconds in sequence.
+
+## 🚀 Quick Deploy to Vercel
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/your-username/ai-persona-generator)
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🆘 Support
+
+For issues and questions, please open a GitHub issue or contact the development team.

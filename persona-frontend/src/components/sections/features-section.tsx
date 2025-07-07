@@ -8,19 +8,16 @@ import {
   Zap, 
   Palette, 
   Download, 
-  Share2, 
   Settings,
-  Sparkles,
-  Image as ImageIcon,
-  FileText
+  Image as ImageIcon
 } from "lucide-react"
 
 const features = [
   {
     icon: Brain,
     title: "Advanced AI Models",
-    description: "Powered by GPT-4 and FLUX 1.1 Pro for the highest quality persona generation",
-    tags: ["OpenAI", "Fal.ai", "GPT-4"],
+    description: "Powered by Persona-LLM and Persona-v.01 for the highest quality persona generation",
+    tags: ["Persona-LLM", "Persona-v.01"],
     color: "purple"
   },
   {
