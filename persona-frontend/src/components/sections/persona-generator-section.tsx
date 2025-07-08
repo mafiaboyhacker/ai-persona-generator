@@ -160,7 +160,7 @@ export function PersonaGeneratorSection() {
       const savedPersonas = JSON.parse(localStorage.getItem('savedPersonas') || '[]')
       
       // 중복 체크: 같은 이미지 URL과 프로필 내용이 있는지 확인
-      const isDuplicate = savedPersonas.some(item => 
+      const isDuplicate = savedPersonas.some((item: any) => 
         item.persona?.imageUrl === generatedPersona.imageUrl && 
         item.persona?.profile === generatedPersona.profile
       )
@@ -432,8 +432,8 @@ export function PersonaGeneratorSection() {
     let saved = JSON.parse(localStorage.getItem('savedPersonas') || '[]')
     
     // 중복 제거 로직
-    const uniquePersonas = saved.filter((item, index, self) => 
-      index === self.findIndex(t => 
+    const uniquePersonas = saved.filter((item: any, index: number, self: any[]) => 
+      index === self.findIndex((t: any) => 
         t.persona?.imageUrl === item.persona?.imageUrl && 
         t.persona?.profile === item.persona?.profile
       )

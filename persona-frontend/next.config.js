@@ -10,9 +10,9 @@ const nextConfig = {
   // 정적 파일 압축
   compress: true,
   
-  // 실험적 기능
+  // 실험적 기능 비활성화 (배포 안정성)
   experimental: {
-    optimizeCss: true,
+    // optimizeCss: true, // 임시 비활성화
   },
   
   // 보안 헤더
