@@ -41,8 +41,8 @@ export function PersonaGeneratorSection() {
   const [savedPersonas, setSavedPersonas] = useState<any[]>([])
   const [selectedPersonaForView, setSelectedPersonaForView] = useState<any>(null)
 
-  // API 기본 URL (환경에 따라 자동 설정)
-  const API_BASE_URL = 'http://localhost:5000'
+  // API 기본 URL (Vercel Serverless Functions)
+  const API_BASE_URL = typeof window !== 'undefined' ? window.location.origin : ''
 
   // 다운로드 드롭다운 외부 클릭 감지
   useEffect(() => {
@@ -81,18 +81,18 @@ export function PersonaGeneratorSection() {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 60000) // 60초 타임아웃
       
-      const response = await fetch(`${API_BASE_URL}/generate_persona`, {
+      const response = await fetch(`${API_BASE_URL}/api/generate-complete-persona`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          persona_type: formData.personaType,
-          desired_style: formData.desiredStyle,
-          output_detail_level: "상세",
-          allow_nsfw_image: formData.allowNsfw,
-          fal_model: "flux-pro-1.1",
-          lora_model: "none"
+          personaType: formData.personaType,
+          desiredStyle: formData.desiredStyle,
+          personalityTraits: "Creative and engaging personality",
+          background: "Professional AI persona",
+          visualPreferences: "High-quality, realistic portrait",
+          allowNsfw: formData.allowNsfw
         }),
         signal: controller.signal
       })
