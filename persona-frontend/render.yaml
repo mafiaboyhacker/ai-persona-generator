@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: persona-frontend
+    name: persona-frontend-ai
     env: node
     plan: free
     buildCommand: npm install && npm run build
@@ -15,3 +15,5 @@ services:
         sync: false
       - key: NODE_ENV
         value: production
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
