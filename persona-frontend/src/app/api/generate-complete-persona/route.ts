@@ -394,7 +394,13 @@ Provide responses in markdown format.
         setTimeout(() => reject(new Error('Image generation timeout')), 180000) // 3분 타임아웃
       })
       
-      const imageGenerationPromise = replicate.run(replicateModel, {
+      // Custom headers to avoid Cloudflare blocking
+      const customReplicate = new Replicate({
+        auth: replicateApiKey,
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      })
+      
+      const imageGenerationPromise = customReplicate.run(replicateModel, {
         input: modelParams
       })
       
