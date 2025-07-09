@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Replicate from 'replicate'
-import { integrateWithAPI } from '@/lib/flux-persona-converter'
+import { integrateWithAPI } from '../../../lib/flux-persona-converter'
 
 export async function POST(request: NextRequest) {
   try {
