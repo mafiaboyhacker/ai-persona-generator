@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
-import { GlassCard } from "@/components/ui/glass-card"
-import { NeonButton } from "@/components/ui/neon-button"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
+import { GlassCard } from "../ui/glass-card"
+import { NeonButton } from "../ui/neon-button"
+import { Textarea } from "../ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
+import { Badge } from "../ui/badge"
 import { Loader2, Shuffle, Download, Edit, X, RotateCcw, ChevronDown, FileText, Image as ImageIcon, Images, Trash2, Eye, ChevronLeft, ChevronRight } from "lucide-react"
 
 export function PersonaGeneratorSection() {

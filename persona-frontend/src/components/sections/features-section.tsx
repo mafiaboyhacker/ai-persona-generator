@@ -1,8 +1,8 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { GlassCard } from "@/components/ui/glass-card"
-import { Badge } from "@/components/ui/badge"
+import { GlassCard } from "../ui/glass-card"
+import { Badge } from "../ui/badge"
 import { 
   Brain, 
   Zap, 

@@ -1,8 +1,8 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { GlassCard } from "@/components/ui/glass-card"
-import { NeonButton } from "@/components/ui/neon-button"
+import { GlassCard } from "../ui/glass-card"
+import { NeonButton } from "../ui/neon-button"
 import { Sparkles, Zap, Brain } from "lucide-react"
 
 export function HeroSection() {
