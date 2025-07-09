@@ -313,9 +313,9 @@ export function CodeDemoSection() {
                   )
                 }}
                 stroke="url(#connectionGradient1)"
-                strokeWidth="4"
+                strokeWidth="2"
                 fill="none"
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                transition={{ type: "spring", stiffness: 500, damping: 20 }}
                 className="drop-shadow-lg"
               />
               
@@ -328,53 +328,12 @@ export function CodeDemoSection() {
                   )
                 }}
                 stroke="url(#connectionGradient2)"
-                strokeWidth="4"
+                strokeWidth="2"
                 fill="none"
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                transition={{ type: "spring", stiffness: 500, damping: 20 }}
                 className="drop-shadow-lg"
               />
               
-              {/* 연결점 표시 (디버그용 - 실제 DOM 위치 확인) */}
-              <motion.circle
-                animate={{
-                  cx: getNodeConnectionPoint('user', 'right').x,
-                  cy: getNodeConnectionPoint('user', 'right').y
-                }}
-                r="6"
-                fill="#8B5CF6"
-                className="opacity-75"
-                transition={{ type: "spring", stiffness: 400, damping: 25 }}
-              />
-              <motion.circle
-                animate={{
-                  cx: getNodeConnectionPoint('agent', 'left').x,
-                  cy: getNodeConnectionPoint('agent', 'left').y
-                }}
-                r="6"
-                fill="#3B82F6"
-                className="opacity-75"
-                transition={{ type: "spring", stiffness: 400, damping: 25 }}
-              />
-              <motion.circle
-                animate={{
-                  cx: getNodeConnectionPoint('agent', 'right').x,
-                  cy: getNodeConnectionPoint('agent', 'right').y
-                }}
-                r="6"
-                fill="#3B82F6"
-                className="opacity-75"
-                transition={{ type: "spring", stiffness: 400, damping: 25 }}
-              />
-              <motion.circle
-                animate={{
-                  cx: getNodeConnectionPoint('result', 'left').x,
-                  cy: getNodeConnectionPoint('result', 'left').y
-                }}
-                r="6"
-                fill="#10B981"
-                className="opacity-75"
-                transition={{ type: "spring", stiffness: 400, damping: 25 }}
-              />
               
             </svg>
 
