@@ -396,7 +396,7 @@ Provide responses in markdown format.
       
       // Custom headers to avoid Cloudflare blocking
       const customReplicate = new Replicate({
-        auth: replicateApiKey,
+        auth: replicateApiToken,
         userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
       })
       
