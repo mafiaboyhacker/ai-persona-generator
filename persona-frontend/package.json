@@ -38,7 +38,8 @@
     "typescript": "^5",
     "@types/node": "^20",
     "@types/react": "^19",
-    "@types/react-dom": "^19"
+    "@types/react-dom": "^19",
+    "https-proxy-agent": "^7.0.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
