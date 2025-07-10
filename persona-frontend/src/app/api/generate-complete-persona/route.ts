@@ -394,38 +394,80 @@ Provide responses in markdown format.
         setTimeout(() => reject(new Error('Image generation timeout')), 180000) // 3분 타임아웃
       })
       
-      // Custom headers to avoid Cloudflare blocking
-      const customReplicate = new Replicate({
-        auth: replicateApiToken,
-        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-        fetch: (url, options) => {
-          const headers = {
-            ...options.headers,
+      // Direct API call to bypass Cloudflare blocking
+      const directApiCall = async () => {
+        console.log('🔄 Using direct API call to bypass Cloudflare...')
+        
+        const response = await fetch('https://api.replicate.com/v1/models/black-forest-labs/flux-1.1-pro/predictions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${replicateApiToken}`,
+            'Content-Type': 'application/json',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
             'Accept': 'application/json, text/plain, */*',
             'Accept-Language': 'en-US,en;q=0.9',
             'Accept-Encoding': 'gzip, deflate, br',
             'DNT': '1',
             'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
+            'Origin': 'https://replicate.com',
+            'Referer': 'https://replicate.com/',
             'Sec-Fetch-Dest': 'empty',
             'Sec-Fetch-Mode': 'cors',
-            'Sec-Fetch-Site': 'cross-site',
+            'Sec-Fetch-Site': 'same-site',
             'Sec-CH-UA': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
             'Sec-CH-UA-Mobile': '?0',
             'Sec-CH-UA-Platform': '"Windows"',
             'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-          }
-          return fetch(url, {
-            ...options,
-            headers: headers
+            'Pragma': 'no-cache',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: JSON.stringify({
+            input: modelParams,
+            webhook_completed: null
           })
+        })
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
         }
-      })
+
+        const prediction = await response.json()
+        console.log(`🎯 Prediction created: ${prediction.id}`)
+        
+        // Poll for completion
+        let result = prediction
+        let pollCount = 0
+        const maxPolls = 90 // 3분 최대 (2초 간격)
+        
+        while ((result.status === 'starting' || result.status === 'processing') && pollCount < maxPolls) {
+          await new Promise(resolve => setTimeout(resolve, 2000))
+          pollCount++
+          
+          const pollResponse = await fetch(`https://api.replicate.com/v1/predictions/${result.id}`, {
+            headers: {
+              'Authorization': `Bearer ${replicateApiToken}`,
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+              'Accept': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest'
+            }
+          })
+          
+          if (!pollResponse.ok) {
+            throw new Error(`Polling failed: ${pollResponse.status}`)
+          }
+          
+          result = await pollResponse.json()
+          console.log(`📊 Poll ${pollCount}: Status = ${result.status}`)
+        }
+
+        if (result.status === 'succeeded') {
+          return result.output
+        } else {
+          throw new Error(`Generation failed: ${result.error || 'Timeout or unknown error'}`)
+        }
+      }
       
-      const imageGenerationPromise = customReplicate.run(replicateModel, {
-        input: modelParams
-      })
+      const imageGenerationPromise = directApiCall()
       
       console.log('🕐 Starting replicate.run...')
       const output = await Promise.race([imageGenerationPromise, timeoutPromise])
