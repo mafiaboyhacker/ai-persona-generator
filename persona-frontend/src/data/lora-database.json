@@ -1,0 +1,125 @@
+{
+  "lora_models": [
+    {
+      "id": "korean-beauty",
+      "name": "Korean Beauty Enhancement",
+      "description": "한국 여성의 자연스러운 미모를 강조하는 LoRA 모델",
+      "weight_range": [0.6, 0.9],
+      "category": "beauty",
+      "keywords": ["korean", "natural", "beauty", "elegant", "sophisticated"],
+      "default_weight": 0.75,
+      "trigger_words": ["korean beauty", "natural makeup", "elegant features"]
+    },
+    {
+      "id": "anime-lora",
+      "name": "Anime Style Korean",
+      "description": "애니메이션 스타일과 한국 특징을 결합한 모델",
+      "weight_range": [0.5, 0.8],
+      "category": "anime",
+      "keywords": ["anime", "cute", "kawaii", "cartoon", "stylized"],
+      "default_weight": 0.65,
+      "trigger_words": ["anime style", "cute expression", "large eyes"]
+    },
+    {
+      "id": "idol-lora",
+      "name": "K-Pop Idol Style",
+      "description": "K-Pop 아이돌의 세련된 스타일과 메이크업",
+      "weight_range": [0.7, 0.95],
+      "category": "idol",
+      "keywords": ["kpop", "idol", "stage makeup", "glamorous", "professional"],
+      "default_weight": 0.8,
+      "trigger_words": ["kpop idol", "stage makeup", "professional styling"]
+    },
+    {
+      "id": "realistic-korean",
+      "name": "Realistic Korean Face",
+      "description": "사실적인 한국인 얼굴 특징을 강화하는 모델",
+      "weight_range": [0.6, 0.85],
+      "category": "realistic",
+      "keywords": ["realistic", "photorealistic", "natural", "authentic"],
+      "default_weight": 0.7,
+      "trigger_words": ["realistic korean", "natural features", "photorealistic"]
+    },
+    {
+      "id": "fashion-model",
+      "name": "Fashion Model Style",
+      "description": "패션 모델의 세련되고 고급스러운 룩",
+      "weight_range": [0.5, 0.8],
+      "category": "fashion",
+      "keywords": ["fashion", "model", "editorial", "high-fashion", "chic"],
+      "default_weight": 0.65,
+      "trigger_words": ["fashion model", "editorial style", "high fashion"]
+    },
+    {
+      "id": "soft-features",
+      "name": "Soft Korean Features",
+      "description": "부드럽고 친근한 한국 여성의 특징",
+      "weight_range": [0.6, 0.9],
+      "category": "soft",
+      "keywords": ["soft", "gentle", "friendly", "approachable", "warm"],
+      "default_weight": 0.75,
+      "trigger_words": ["soft features", "gentle expression", "warm smile"]
+    },
+    {
+      "id": "professional-look",
+      "name": "Professional Korean Look",
+      "description": "전문직 여성의 세련되고 신뢰감 있는 이미지",
+      "weight_range": [0.5, 0.8],
+      "category": "professional",
+      "keywords": ["professional", "business", "confident", "sophisticated", "mature"],
+      "default_weight": 0.65,
+      "trigger_words": ["professional look", "business attire", "confident expression"]
+    },
+    {
+      "id": "youthful-korean",
+      "name": "Youthful Korean Style",
+      "description": "젊고 활기찬 한국 여성의 이미지",
+      "weight_range": [0.6, 0.85],
+      "category": "youthful",
+      "keywords": ["young", "fresh", "energetic", "vibrant", "cheerful"],
+      "default_weight": 0.7,
+      "trigger_words": ["youthful appearance", "fresh look", "energetic expression"]
+    },
+    {
+      "id": "elegant-korean",
+      "name": "Elegant Korean Style",
+      "description": "우아하고 고급스러운 한국 여성의 매력",
+      "weight_range": [0.7, 0.9],
+      "category": "elegant",
+      "keywords": ["elegant", "graceful", "refined", "classy", "sophisticated"],
+      "default_weight": 0.8,
+      "trigger_words": ["elegant style", "graceful pose", "refined features"]
+    },
+    {
+      "id": "street-style",
+      "name": "Korean Street Style",
+      "description": "한국의 트렌디한 스트릿 패션 스타일",
+      "weight_range": [0.5, 0.8],
+      "category": "street",
+      "keywords": ["street fashion", "trendy", "casual", "urban", "contemporary"],
+      "default_weight": 0.65,
+      "trigger_words": ["street style", "urban fashion", "trendy outfit"]
+    }
+  ],
+  "selection_rules": {
+    "max_loras": 3,
+    "weight_balance": {
+      "primary": 0.8,
+      "secondary": 0.6,
+      "tertiary": 0.4
+    },
+    "category_combinations": {
+      "beauty_focused": ["korean-beauty", "soft-features", "realistic-korean"],
+      "idol_style": ["idol-lora", "fashion-model", "elegant-korean"],
+      "professional": ["professional-look", "elegant-korean", "realistic-korean"],
+      "youthful_trendy": ["youthful-korean", "street-style", "soft-features"],
+      "anime_style": ["anime-lora", "soft-features", "youthful-korean"]
+    }
+  },
+  "metadata": {
+    "version": "1.0",
+    "last_updated": "2025-01-11",
+    "total_models": 10,
+    "supported_model": "flux-dev-lora"
+  }
+}

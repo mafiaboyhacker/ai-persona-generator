@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Replicate from 'replicate'
 import { integrateWithAPI } from '../../../lib/flux-persona-converter'
+import { selectOptimalLoras, buildLoraParams, integrateLoraTriggersToPrompt, estimateLoraTokenUsage, processManualLoraSelection } from '../../../lib/lora-ai-selector'
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('🚀 API 요청 시작')
     const startTime = Date.now()
     
     const body = await request.json()
+    console.log('📥 요청 본문:', JSON.stringify(body, null, 2))
     const { 
       personaType, 
       desiredStyle, 
@@ -16,17 +19,31 @@ export async function POST(request: NextRequest) {
       allowNsfw = false,
       fluxModel = "Persona-v.01",
       customImagePrompt = null,
-      imageOnly = false
+      imageOnly = false,
+      customSeed = null,
+      manualLoraSelection = null,
+      generateNewFace = false,
+      lockSeed = false
     } = body
 
     // API 키 확인
     const openaiApiKey = process.env.OPENAI_API_KEY
     const replicateApiToken = process.env.REPLICATE_API_TOKEN
 
+    console.log('🔑 API 키 확인:', {
+      openai: openaiApiKey ? 'OK' : 'MISSING',
+      replicate: replicateApiToken ? 'OK' : 'MISSING'
+    })
+
     if (!openaiApiKey || !replicateApiToken) {
+      console.error('❌ API 키 누락')
       return NextResponse.json({ 
         error: 'API keys not configured',
-        message: 'Please add OPENAI_API_KEY and REPLICATE_API_TOKEN to environment variables'
+        message: 'Please add OPENAI_API_KEY and REPLICATE_API_TOKEN to environment variables',
+        debug: {
+          openai: openaiApiKey ? 'found' : 'missing',
+          replicate: replicateApiToken ? 'found' : 'missing'
+        }
       }, { status: 500 })
     }
 
@@ -38,9 +55,9 @@ export async function POST(request: NextRequest) {
     // 안전장치: 타임아웃 체크
     const MAX_PROCESSING_TIME = 300000 // 5분
 
-    // 이미지 전용 모드 처리 (Cloudflare AI Gateway 통해)
+    // 이미지 전용 모드 처리 (LoRA 적용)
     if (imageOnly && customImagePrompt) {
-      console.log('🎨 Image-only mode: Using custom prompt via Cloudflare Gateway')
+      console.log('🎨 Image-only mode: Using custom prompt with LoRA enhancement')
       
       const parsedResponse = {
         profile: "Existing persona profile maintained", 
@@ -50,21 +67,64 @@ export async function POST(request: NextRequest) {
       // 이미지 생성으로 바로 이동
       let imageUrl = null
       let imageError = null
+      let loraAnalysis = null
+      // 시드 처리 로직 (generateNewFace 최우선)
+      let actualSeed
+      if (generateNewFace) {
+        // 새로운 얼굴 생성 모드: lockSeed와 customSeed 무시하고 무조건 새 시드 생성
+        actualSeed = Math.floor(Math.random() * 1000000)
+        console.log('🔄 새로운 얼굴 생성 모드: lockSeed 무시하고 새 시드 강제 생성 -', actualSeed)
+        if (lockSeed) {
+          console.log('⚠️  시드 락이 활성화되어 있지만 새로운 얼굴 생성이 우선됩니다')
+        }
+      } else if (lockSeed && customSeed) {
+        // 시드 락 활성화 시 기존 시드 유지
+        actualSeed = customSeed
+        console.log('🔒 시드 락 모드: 기존 시드 고정 -', actualSeed)
+      } else {
+        // 일반 모드: 사용자 시드 또는 랜덤 생성
+        actualSeed = customSeed || Math.floor(Math.random() * 1000000)
+        console.log('🎲 시드 사용:', actualSeed, customSeed ? '(사용자 지정)' : '(랜덤 생성)')
+      }
 
       try {
+        // LoRA 선택 로직 - 수동 선택 우선, 없으면 AI 자동 선택
+        if (manualLoraSelection) {
+          console.log('🎯 Image-only mode: 수동 LoRA 선택 사용')
+          loraAnalysis = processManualLoraSelection(manualLoraSelection)
+        } else {
+          console.log('🤖 Image-only mode: AI LoRA 자동 선택 시작...')
+          const userSettings = {
+            personaType: personaType || 'AI influencer',
+            desiredStyle: desiredStyle || 'Glamorous and dramatic',
+            personalityTraits: personalityTraits || '',
+            visualPreferences: visualPreferences || ''
+          }
+          
+          // 프롬프트 기반으로 LoRA 선택 (빈 프로필로 대체)
+          loraAnalysis = await selectOptimalLoras("AI Influencer persona with glamorous style", userSettings)
+        }
+        console.log('✅ Image-only LoRA 선택 완료:', loraAnalysis)
+
         const replicateModel = 'black-forest-labs/flux-1.1-pro'
-        const modelUsed = 'Persona-v.01'
-        // 원래 프롬프트 그대로 사용 (Railway는 제한 없음)
-        const finalPrompt = parsedResponse.imagePrompt
+        const modelUsed = 'Persona-v.01-AI-Pro'
         
+        // LoRA 트리거 워드를 프롬프트에 통합
+        const enhancedPrompt = integrateLoraTriggersToPrompt(parsedResponse.imagePrompt, loraAnalysis)
+        console.log('🔄 Image-only LoRA 강화 프롬프트:', enhancedPrompt.substring(0, 100) + '...')
+        
+        // LoRA 파라미터 구성
+        const loraParams = buildLoraParams(loraAnalysis)
         const modelParams = {
-          prompt: finalPrompt,
-          width: 768,
-          height: 1024,
-          guidance: 3,
-          safety_tolerance: 2,
+          prompt: enhancedPrompt,
+          width: 1024,
+          height: 1440,
+          guidance: 5,
+          safety_tolerance: 5,
           output_format: 'webp',
-          output_quality: 80,
+          output_quality: 90,
+          seed: actualSeed,
+          ...loraParams
         }
 
         console.log(`🎨 Starting image generation with ${modelUsed} (${replicateModel})`)
@@ -130,15 +190,19 @@ export async function POST(request: NextRequest) {
         profile: null, // 이미지 전용 모드에서는 프로필 반환 안함
         imageUrl: imageUrl,
         imagePrompt: parsedResponse.imagePrompt,
-        model_used: 'Persona-v.01',
+        model_used: 'Persona-v.01-AI-Pro',
         timestamp: new Date().toISOString(),
         imageError: imageError,
         processing_time_ms: processingTime,
-        mode: 'image-only'
+        mode: 'image-only',
+        lora_analysis: loraAnalysis,
+        lora_selection_mode: manualLoraSelection ? "manual" : "ai_auto",
+        seed: actualSeed
       })
     }
 
     // 1단계: OpenAI로 페르소나 프로필 생성
+    console.log('🧠 OpenAI API 호출 시작')
     const personaResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -164,11 +228,12 @@ Provide responses in markdown format.
 ## 페르소나 이름: [한국어 이름] ([영어 이름])
 
 **이름 생성 지침**:
-- **한국어 이름**: 반드시 성+이름 형태로 생성. 성은 일반적인 한국 성씨 사용. 이름은 2-4글자의 다양한 길이로 생성. 독특하고 매력적인 이름 선호. 
-  예: 김소연, 박지우, 이하늘, 최은서, 정수민아, 한예은이, 윤하늘별, 조소망이 등
-- **영어 이름**: 성+이름 형태로 생성. 매력적이고 기억하기 쉬운 이름. 일반적인 이름과 독특한 이름의 조합. 
-  예: Kim Soyeon, Park Jiwoo, Lee Haneul, Choi Eunseo, Jung Aria, Han Luna, Yoon Stella, Jo Zara 등
-- **한국 성씨 예시**: 김, 이, 박, 최, 정, 한, 윤, 조, 장, 임, 오, 강, 송, 유, 홍, 전, 고, 문, 신, 남 등
+- **창의성 최우선**: 매번 새롭고 독창적인 이름을 생성하세요. 기존 예시는 참고만 하되 동일한 이름 반복 금지
+- **한국어 이름**: 반드시 성+이름 형태로 생성. 성은 다양한 한국 성씨 활용. 이름은 2-4글자의 다양한 길이로 생성. 독특하고 매력적인 이름 선호
+  (참고 예시: 김소연, 박지우, 이하늘, 최은서, 정수민아, 한예은이, 윤하늘별, 조소망이 - 이와 다른 새로운 이름 생성)
+- **영어 이름**: 성+이름 형태로 생성. 매력적이고 기억하기 쉬운 이름. 일반적인 이름과 독특한 이름의 창의적 조합
+  (참고 예시: Kim Soyeon, Park Jiwoo, Lee Haneul, Choi Eunseo, Jung Aria, Han Luna, Yoon Stella, Jo Zara - 이와 다른 새로운 이름 생성)
+- **성씨 다양화**: 김, 이, 박, 최, 정, 한, 윤, 조, 장, 임, 오, 강, 송, 유, 홍, 전, 고, 문, 신, 남 등 다양한 성씨 활용하여 창의적 조합
 - **페르소나 타입별 이름 특성**:
   - AI 인플루언서: 모던하고 트렌디한 이름
   - 배우: 클래식하면서도 기억하기 쉬운 이름
@@ -316,34 +381,44 @@ Provide responses in markdown format.
           }
         ],
         max_tokens: 6000,
-        temperature: 0.8,
+        temperature: 1.0,
       }),
     })
 
+    console.log('🧠 OpenAI API 응답 상태:', personaResponse.status)
+    
     if (!personaResponse.ok) {
+      console.error('❌ OpenAI API 오류 발생')
       const errorData = await personaResponse.json()
+      console.error('❌ OpenAI 오류 상세:', errorData)
       return NextResponse.json({ 
         error: 'OpenAI API error',
         details: errorData
       }, { status: 500 })
     }
 
+    console.log('🧠 OpenAI API 응답 파싱 중...')
     const personaData = await personaResponse.json()
     const responseText = personaData.choices[0]?.message?.content
+    console.log('✅ OpenAI 응답 텍스트 길이:', responseText?.length || 0)
 
     if (!responseText) {
+      console.error('❌ OpenAI에서 콘텐츠가 생성되지 않음')
       return NextResponse.json({ 
         error: 'No content generated from OpenAI'
       }, { status: 500 })
     }
 
-    // 응답 파싱 - Flux 1.1 Pro 최적화 프롬프트 생성
+    // 응답 파싱 - Flux 최적화 프롬프트 생성
     let parsedResponse
     try {
+      console.log('🔄 응답 파싱 시작')
       // 프로필에서 IMAGE_PROMPT 부분 제거 (기존 방식 호환)
       let profile = responseText.replace(/---\s*\*\*IMAGE_PROMPT:\*\*[\s\S]*$/i, '').trim()
+      console.log('✅ 프로필 텍스트 정리 완료')
       
-      // Flux 1.1 Pro 최적화 프롬프트 생성 (개선된 시스템 사용)
+      // Flux 최적화 프롬프트 생성 (개선된 시스템 사용)
+      console.log('🔄 Flux 최적화 프롬프트 생성 시작')
       const userSettings = {
         personaType: personaType || 'AI 인플루언서',
         desiredStyle: desiredStyle || '모던하고 세련된',
@@ -375,25 +450,67 @@ Provide responses in markdown format.
       }
     }
 
-    // 2단계: Replicate로 이미지 생성 (Cloudflare AI Gateway 통해)
+    // 2단계: AI LoRA 선택 및 이미지 생성
     let imageUrl = null
     let imageError = null
+    let loraAnalysis = null
+    // 시드 처리 로직 (generateNewFace 최우선)
+    let actualSeed
+    if (generateNewFace) {
+      // 새로운 얼굴 생성 모드: lockSeed와 customSeed 무시하고 무조건 새 시드 생성
+      actualSeed = Math.floor(Math.random() * 1000000)
+      console.log('🔄 새로운 얼굴 생성 모드: lockSeed 무시하고 새 시드 강제 생성 -', actualSeed)
+      if (lockSeed) {
+        console.log('⚠️  시드 락이 활성화되어 있지만 새로운 얼굴 생성이 우선됩니다')
+      }
+    } else if (lockSeed && customSeed) {
+      // 시드 락 활성화 시 기존 시드 유지
+      actualSeed = customSeed
+      console.log('🔒 시드 락 모드: 기존 시드 고정 -', actualSeed)
+    } else {
+      // 일반 모드: 사용자 시드 또는 랜덤 생성
+      actualSeed = customSeed || Math.floor(Math.random() * 1000000)
+      console.log('🎲 시드 사용:', actualSeed, customSeed ? '(사용자 지정)' : '(랜덤 생성)')
+    }
 
     try {
-      // Persona-v.01 모델 고정 설정 (실사 강조)
+      // LoRA 선택 로직 - 수동 선택 우선, 없으면 AI 자동 선택
+      if (manualLoraSelection) {
+        console.log('🎯 수동 LoRA 선택 사용')
+        loraAnalysis = processManualLoraSelection(manualLoraSelection)
+      } else {
+        console.log('🤖 AI LoRA 자동 선택 시작...')
+        const userSettings = {
+          personaType: personaType || 'AI 인플루언서',
+          desiredStyle: desiredStyle || '모던하고 세련된',
+          personalityTraits: personalityTraits || '',
+          visualPreferences: visualPreferences || ''
+        }
+        
+        loraAnalysis = await selectOptimalLoras(parsedResponse.profile, userSettings)
+      }
+      console.log('✅ LoRA 선택 완료:', loraAnalysis)
+
+      // Persona-v.01-AI 모델 설정 (LoRA 지원)
       const replicateModel = 'black-forest-labs/flux-1.1-pro'
-      const modelUsed = 'Persona-v.01'
-      // 원래 프롬프트 그대로 사용 (Railway는 제한 없음)
-      const finalPrompt = parsedResponse.imagePrompt
+      const modelUsed = 'Persona-v.01-AI-Pro'
       
+      // LoRA 트리거 워드를 프롬프트에 통합
+      const enhancedPrompt = integrateLoraTriggersToPrompt(parsedResponse.imagePrompt, loraAnalysis)
+      console.log('🔄 LoRA 강화 프롬프트:', enhancedPrompt.substring(0, 100) + '...')
+      
+      // LoRA 파라미터 구성
+      const loraParams = buildLoraParams(loraAnalysis)
       const modelParams = {
-        prompt: finalPrompt,
-        width: 768,
-        height: 1024,
-        guidance: 3,
-        safety_tolerance: 2,
+        prompt: enhancedPrompt,
+        width: 1024,
+        height: 1440,
+        guidance: 5,
+        safety_tolerance: 5,
         output_format: 'webp',
-        output_quality: 80,
+        output_quality: 90,
+        seed: actualSeed,
+        ...loraParams
       }
 
       console.log(`🎨 Starting image generation with ${modelUsed} (${replicateModel})`)
@@ -462,19 +579,25 @@ Provide responses in markdown format.
       profile: parsedResponse.profile,
       imageUrl: imageUrl,
       imagePrompt: parsedResponse.imagePrompt,
-      model_used: 'Persona-v.01',
+      model_used: 'Persona-v.01-AI-Pro',
       timestamp: new Date().toISOString(),
       imageError: imageError,
       processing_time_ms: processingTime,
       apex_engine: 'v10-Odyssey-Hybrid',
-      token_estimate: Math.floor(parsedResponse.profile?.length / 4) || 0
+      token_estimate: Math.floor(parsedResponse.profile?.length / 4) || 0,
+      lora_analysis: loraAnalysis,
+      lora_selection_mode: manualLoraSelection ? "manual" : "ai_auto",
+      lora_token_usage: estimateLoraTokenUsage(),
+      seed: actualSeed
     })
 
   } catch (error) {
-    console.error('Complete persona generation error:', error)
+    console.error('❌ Complete persona generation error:', error)
+    console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack trace')
     return NextResponse.json({ 
       error: 'Internal server error',
-      message: error instanceof Error ? error.message : 'Unknown error'
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
     }, { status: 500 })
   }
 }

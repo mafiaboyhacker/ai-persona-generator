@@ -39,7 +39,11 @@ export function PersonaGeneratorSection() {
     imagePrompt: "",
     fluxModel: "Persona-v.01",
     loraModel: "none",
-    seed: ""
+    loraModel2: "",
+    loraModel3: "",
+    seed: "",
+    generateNewFace: false,
+    lockSeed: false
   })
   const [isDownloadDropdownOpen, setIsDownloadDropdownOpen] = useState(false)
   const downloadDropdownRef = useRef<HTMLDivElement>(null)
@@ -971,7 +975,11 @@ export function PersonaGeneratorSection() {
       imagePrompt: generatedPersona.imagePrompt || "",
       fluxModel: generatedPersona.fal_model || "flux-pro-1.1",
       loraModel: "none",
-      seed: generatedPersona.seed || ""
+      loraModel2: "",
+      loraModel3: "",
+      seed: generatedPersona.seed || "",
+      generateNewFace: false,
+      lockSeed: false
     })
     
     setIsEditModalOpen(true)
@@ -1014,6 +1022,18 @@ export function PersonaGeneratorSection() {
           fluxModel: editFormData.fluxModel,
           // 커스텀 이미지 프롬프트 사용
           customImagePrompt: editFormData.imagePrompt,
+          // 수동 LoRA 선택 추가
+          manualLoraSelection: editFormData.loraModel !== "none" ? {
+            lora1: editFormData.loraModel,
+            lora2: editFormData.loraModel2 || null,
+            lora3: editFormData.loraModel3 || null
+          } : null,
+          // 커스텀 시드 추가
+          customSeed: editFormData.seed ? parseInt(editFormData.seed) : null,
+          // 새로운 얼굴 생성 플래그 추가
+          generateNewFace: editFormData.generateNewFace,
+          // 시드 락 플래그 추가
+          lockSeed: editFormData.lockSeed,
           imageOnly: true // 이미지만 재생성 플래그
         }),
         signal: controller.signal
@@ -1560,7 +1580,7 @@ export function PersonaGeneratorSection() {
               {/* LoRA 모델 선택 */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  LoRA Model
+                  LoRA Model 1
                 </label>
                 <Select
                   value={editFormData.loraModel}
@@ -1570,26 +1590,196 @@ export function PersonaGeneratorSection() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="realistic-portrait">Realistic Portrait</SelectItem>
-                    <SelectItem value="photography">Photography</SelectItem>
-                    <SelectItem value="anime-style">Anime Style</SelectItem>
+                    <SelectItem value="none">AI 자동 선택</SelectItem>
+                    <SelectItem value="korean-beauty">Korean Beauty Enhancement</SelectItem>
+                    <SelectItem value="realistic-korean">Realistic Korean Face</SelectItem>
+                    <SelectItem value="soft-features">Soft Korean Features</SelectItem>
+                    <SelectItem value="idol-lora">K-Pop Idol Style</SelectItem>
+                    <SelectItem value="fashion-model">Fashion Model Style</SelectItem>
+                    <SelectItem value="influencer-beauty">Influencer Beauty</SelectItem>
+                    <SelectItem value="luxury-beauty">Luxury Beauty</SelectItem>
+                    <SelectItem value="celebrity-aura">Celebrity Aura</SelectItem>
+                    <SelectItem value="professional-makeup">Professional Makeup</SelectItem>
+                    <SelectItem value="editorial-fashion">Editorial Fashion</SelectItem>
+                    <SelectItem value="actress-beauty">Actress Beauty</SelectItem>
+                    <SelectItem value="glamour-model">Glamour Model</SelectItem>
+                    <SelectItem value="commercial-beauty">Commercial Beauty</SelectItem>
+                    <SelectItem value="vintage-elegance">Vintage Elegance</SelectItem>
+                    <SelectItem value="street-chic">Street Chic</SelectItem>
+                    <SelectItem value="artistic-portrait">Artistic Portrait</SelectItem>
+                    <SelectItem value="ethereal-beauty">Ethereal Beauty</SelectItem>
+                    <SelectItem value="fierce-confidence">Fierce Confidence</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              {/* 시드값 */}
+              {/* LoRA 모델 2 선택 */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Seed (Optional)
+                  LoRA Model 2 (Optional)
                 </label>
-                <input
-                  type="text"
-                  value={editFormData.seed}
-                  onChange={(e) => setEditFormData(prev => ({ ...prev, seed: e.target.value }))}
-                  placeholder="Enter seed number for reproducible results"
-                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
+                <Select
+                  value={editFormData.loraModel2 || "none"}
+                  onValueChange={(value) => setEditFormData(prev => ({ ...prev, loraModel2: value === "none" ? "" : value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">선택 안함</SelectItem>
+                    <SelectItem value="korean-beauty">Korean Beauty Enhancement</SelectItem>
+                    <SelectItem value="realistic-korean">Realistic Korean Face</SelectItem>
+                    <SelectItem value="soft-features">Soft Korean Features</SelectItem>
+                    <SelectItem value="idol-lora">K-Pop Idol Style</SelectItem>
+                    <SelectItem value="fashion-model">Fashion Model Style</SelectItem>
+                    <SelectItem value="influencer-beauty">Influencer Beauty</SelectItem>
+                    <SelectItem value="luxury-beauty">Luxury Beauty</SelectItem>
+                    <SelectItem value="celebrity-aura">Celebrity Aura</SelectItem>
+                    <SelectItem value="professional-makeup">Professional Makeup</SelectItem>
+                    <SelectItem value="editorial-fashion">Editorial Fashion</SelectItem>
+                    <SelectItem value="actress-beauty">Actress Beauty</SelectItem>
+                    <SelectItem value="glamour-model">Glamour Model</SelectItem>
+                    <SelectItem value="commercial-beauty">Commercial Beauty</SelectItem>
+                    <SelectItem value="vintage-elegance">Vintage Elegance</SelectItem>
+                    <SelectItem value="street-chic">Street Chic</SelectItem>
+                    <SelectItem value="artistic-portrait">Artistic Portrait</SelectItem>
+                    <SelectItem value="ethereal-beauty">Ethereal Beauty</SelectItem>
+                    <SelectItem value="fierce-confidence">Fierce Confidence</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* LoRA 모델 3 선택 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  LoRA Model 3 (Optional)
+                </label>
+                <Select
+                  value={editFormData.loraModel3 || "none"}
+                  onValueChange={(value) => setEditFormData(prev => ({ ...prev, loraModel3: value === "none" ? "" : value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">선택 안함</SelectItem>
+                    <SelectItem value="korean-beauty">Korean Beauty Enhancement</SelectItem>
+                    <SelectItem value="realistic-korean">Realistic Korean Face</SelectItem>
+                    <SelectItem value="soft-features">Soft Korean Features</SelectItem>
+                    <SelectItem value="idol-lora">K-Pop Idol Style</SelectItem>
+                    <SelectItem value="fashion-model">Fashion Model Style</SelectItem>
+                    <SelectItem value="influencer-beauty">Influencer Beauty</SelectItem>
+                    <SelectItem value="luxury-beauty">Luxury Beauty</SelectItem>
+                    <SelectItem value="celebrity-aura">Celebrity Aura</SelectItem>
+                    <SelectItem value="professional-makeup">Professional Makeup</SelectItem>
+                    <SelectItem value="editorial-fashion">Editorial Fashion</SelectItem>
+                    <SelectItem value="actress-beauty">Actress Beauty</SelectItem>
+                    <SelectItem value="glamour-model">Glamour Model</SelectItem>
+                    <SelectItem value="commercial-beauty">Commercial Beauty</SelectItem>
+                    <SelectItem value="vintage-elegance">Vintage Elegance</SelectItem>
+                    <SelectItem value="street-chic">Street Chic</SelectItem>
+                    <SelectItem value="artistic-portrait">Artistic Portrait</SelectItem>
+                    <SelectItem value="ethereal-beauty">Ethereal Beauty</SelectItem>
+                    <SelectItem value="fierce-confidence">Fierce Confidence</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* 다른 얼굴로 변경 토글 */}
+              <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-600">
+                <div>
+                  <label className="text-sm font-medium text-gray-300">
+                    다른 얼굴로 변경
+                  </label>
+                  <p className="text-xs text-gray-400 mt-1">
+                    활성화하면 완전히 새로운 얼굴이 생성됩니다 (시드 락 자동 해제)
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditFormData(prev => ({ 
+                    ...prev, 
+                    generateNewFace: !prev.generateNewFace,
+                    // 새로운 얼굴 생성 활성화 시 시드 락 자동 해제
+                    lockSeed: !prev.generateNewFace ? false : prev.lockSeed
+                  }))}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    editFormData.generateNewFace ? 'bg-purple-600' : 'bg-gray-600'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      editFormData.generateNewFace ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* 시드값 */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-medium text-gray-300">
+                    Seed (Optional)
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400">시드 락 {editFormData.generateNewFace ? '(비활성화됨)' : ''}</span>
+                    <button
+                      type="button"
+                      onClick={() => setEditFormData(prev => ({ 
+                        ...prev, 
+                        lockSeed: !prev.lockSeed,
+                        // 시드 락 활성화 시 새로운 얼굴 생성 자동 해제
+                        generateNewFace: !prev.lockSeed ? false : prev.generateNewFace
+                      }))}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                        editFormData.lockSeed ? 'bg-green-600' : 'bg-gray-600'
+                      }`}
+                      disabled={editFormData.generateNewFace}
+                    >
+                      <span
+                        className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                          editFormData.lockSeed ? 'translate-x-5' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={editFormData.seed}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, seed: e.target.value }))}
+                    placeholder={editFormData.generateNewFace ? "새 시드가 자동 생성됩니다" : editFormData.lockSeed ? "현재 시드가 고정됩니다" : "Enter seed number for reproducible results"}
+                    disabled={editFormData.generateNewFace || editFormData.lockSeed}
+                    className={`flex-1 px-3 py-2 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                      editFormData.generateNewFace || editFormData.lockSeed ? 'bg-gray-700 cursor-not-allowed' : 'bg-gray-800'
+                    }`}
+                  />
+                  {!editFormData.generateNewFace && !editFormData.lockSeed && (
+                    <button
+                      type="button"
+                      onClick={() => setEditFormData(prev => ({ ...prev, seed: Math.floor(Math.random() * 1000000).toString() }))}
+                      className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
+                    >
+                      랜덤
+                    </button>
+                  )}
+                </div>
+                {editFormData.generateNewFace && (
+                  <p className="text-xs text-purple-400 mt-1">
+                    🔄 새로운 얼굴 생성 모드: 시드 락을 무시하고 완전히 새로운 시드가 생성됩니다
+                  </p>
+                )}
+                {editFormData.lockSeed && !editFormData.generateNewFace && (
+                  <p className="text-xs text-green-400 mt-1">
+                    🔒 시드 락 모드: 현재 시드가 고정되어 동일한 기본 구조가 유지됩니다
+                  </p>
+                )}
+                {!editFormData.generateNewFace && !editFormData.lockSeed && (
+                  <p className="text-xs text-blue-400 mt-1">
+                    🎲 자유 모드: 시드를 수동으로 입력하거나 랜덤 생성할 수 있습니다
+                  </p>
+                )}
               </div>
             </div>
 
