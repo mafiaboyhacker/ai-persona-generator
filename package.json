@@ -1,0 +1,12 @@
+{
+  "name": "ai-persona-generator",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "cd persona-frontend && npm install && npm run build",
+    "start": "cd persona-frontend && npm start",
+    "dev": "cd persona-frontend && npm run dev"
+  },
+  "workspaces": [
+    "persona-frontend"
+  ]
+}
