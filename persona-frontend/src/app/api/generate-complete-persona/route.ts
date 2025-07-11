@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Replicate from 'replicate'
 import { integrateWithAPI } from '../../../lib/flux-persona-converter'
-import { HttpsProxyAgent } from 'https-proxy-agent'
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,9 +38,9 @@ export async function POST(request: NextRequest) {
     // 안전장치: 타임아웃 체크
     const MAX_PROCESSING_TIME = 300000 // 5분
 
-    // 이미지 전용 모드 처리
+    // 이미지 전용 모드 처리 (Cloudflare AI Gateway 통해)
     if (imageOnly && customImagePrompt) {
-      console.log('🎨 Image-only mode: Using custom prompt')
+      console.log('🎨 Image-only mode: Using custom prompt via Cloudflare Gateway')
       
       const parsedResponse = {
         profile: "Existing persona profile maintained", 
@@ -53,16 +52,17 @@ export async function POST(request: NextRequest) {
       let imageError = null
 
       try {
-        // Persona-v.01 모델 고정 설정 (실사 강조)
         const replicateModel = 'black-forest-labs/flux-1.1-pro'
         const modelUsed = 'Persona-v.01'
+        // 원래 프롬프트 그대로 사용 (Railway는 제한 없음)
+        const finalPrompt = parsedResponse.imagePrompt
+        
         const modelParams = {
-          prompt: parsedResponse.imagePrompt,
+          prompt: finalPrompt,
           width: 768,
           height: 1024,
-          guidance: 3.5,
-          num_inference_steps: 30,
-          safety_tolerance: 5,
+          guidance: 3,
+          safety_tolerance: 2,
           output_format: 'webp',
           output_quality: 80,
         }
@@ -74,35 +74,42 @@ export async function POST(request: NextRequest) {
           setTimeout(() => reject(new Error('Image generation timeout')), 180000) // 3분
         })
         
-        const imageGenerationPromise = replicate.run(replicateModel, {
-          input: modelParams
-        })
+        // Replicate API 직접 호출
+        const directApiCall = async () => {
+          console.log('🌟 Making direct request to Replicate API (image-only)')
+          
+          const output = await replicate.run(
+            'black-forest-labs/flux-1.1-pro',
+            { input: modelParams }
+          )
+          
+          return output
+        }
         
-        console.log('🕐 Starting replicate.run...')
+        const imageGenerationPromise = directApiCall()
+        
+        console.log('🕐 Starting Replicate API call...')
         const output = await Promise.race([imageGenerationPromise, timeoutPromise])
-        console.log('🕐 Replicate.run completed')
+        console.log('🕐 Replicate API call completed')
 
         console.log('🔍 Replicate output type:', typeof output)
         console.log('🔍 Replicate output value:', JSON.stringify(output, null, 2))
 
-        // Replicate 출력 형식 처리 (FileOutput 지원)
+        // Replicate 출력 형식 처리 (Cloudflare Gateway 통과)
         if (output) {
-          if (output && typeof output === 'object' && output.constructor && output.constructor.name === 'FileOutput') {
-            console.log('✅ Found FileOutput object')
-            const fileOutput = output as any; // 타입 안전성을 위해 any로 캐스팅
-            if (fileOutput.url && typeof fileOutput.url === 'function') {
-              console.log('🔍 Calling FileOutput.url() function...')
-              const urlResult = await fileOutput.url()
-              imageUrl = urlResult.toString()
-              console.log('✅ Successfully extracted URL from FileOutput')
-            } else {
-              throw new Error('FileOutput object does not have url() function')
-            }
+          if (Array.isArray(output) && output.length > 0) {
+            // 배열 형태 (일반적인 경우)
+            imageUrl = output[0]
+            console.log('✅ Found URL in array format')
+          } else if (typeof output === 'string') {
+            // 직접 URL 문자열
+            imageUrl = output
+            console.log('✅ Found direct URL string')
           } else {
             console.log('🔍 Unexpected output format:', output)
             throw new Error(`Unexpected output format from Replicate: ${typeof output}`)
           }
-          console.log('✅ Image generation successful with Replicate')
+          console.log('✅ Image generation successful with Cloudflare Gateway')
           console.log('🔗 Final image URL:', imageUrl)
         } else {
           throw new Error('No image output received from Replicate')
@@ -368,7 +375,7 @@ Provide responses in markdown format.
       }
     }
 
-    // 2단계: Replicate로 이미지 생성 (Persona-v.01 모델 고정)
+    // 2단계: Replicate로 이미지 생성 (Cloudflare AI Gateway 통해)
     let imageUrl = null
     let imageError = null
 
@@ -376,13 +383,15 @@ Provide responses in markdown format.
       // Persona-v.01 모델 고정 설정 (실사 강조)
       const replicateModel = 'black-forest-labs/flux-1.1-pro'
       const modelUsed = 'Persona-v.01'
+      // 원래 프롬프트 그대로 사용 (Railway는 제한 없음)
+      const finalPrompt = parsedResponse.imagePrompt
+      
       const modelParams = {
-        prompt: parsedResponse.imagePrompt,
+        prompt: finalPrompt,
         width: 768,
         height: 1024,
-        guidance: 3.5,
-        num_inference_steps: 30,
-        safety_tolerance: 5,
+        guidance: 3,
+        safety_tolerance: 2,
         output_format: 'webp',
         output_quality: 80,
       }
@@ -395,247 +404,42 @@ Provide responses in markdown format.
         setTimeout(() => reject(new Error('Image generation timeout')), 180000) // 3분 타임아웃
       })
       
-      // Proxy-enabled API call to bypass Cloudflare blocking
-      const proxyApiCall = async () => {
-        console.log('🔄 Using proxy-enabled API call to bypass Cloudflare...')
+      // Replicate API 직접 호출
+      const directApiCall = async () => {
+        console.log('🌟 Making direct request to Replicate API')
         
-        // 무료 프록시 목록 (대안용)
-        const freeProxies = [
-          'http://47.91.15.175:8080',
-          'http://47.89.153.210:80', 
-          'http://47.91.170.222:8080',
-          'http://176.31.68.252:3128',
-          'http://188.165.228.132:3128'
-        ]
+        const output = await replicate.run(
+          'black-forest-labs/flux-1.1-pro',
+          { input: modelParams }
+        )
         
-        // 프록시 없이 먼저 시도
-        const makeRequest = async (proxyUrl = null) => {
-          let agent = undefined
-          let logMessage = '🌐 Direct request (no proxy)'
-          
-          if (proxyUrl) {
-            try {
-              agent = new HttpsProxyAgent(proxyUrl)
-              logMessage = `🔗 Using proxy: ${proxyUrl}`
-            } catch (error) {
-              console.log(`❌ Proxy ${proxyUrl} failed:`, error.message)
-              return null
-            }
-          }
-          
-          console.log(logMessage)
-          
-          const fetchOptions = {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${replicateApiToken}`,
-              'Content-Type': 'application/json',
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-              'Accept': 'application/json, text/plain, */*',
-              'Accept-Language': 'en-US,en;q=0.9',
-              'Accept-Encoding': 'gzip, deflate, br',
-              'DNT': '1',
-              'Connection': 'keep-alive',
-              'Origin': 'https://replicate.com',
-              'Referer': 'https://replicate.com/',
-              'Sec-Fetch-Dest': 'empty',
-              'Sec-Fetch-Mode': 'cors',
-              'Sec-Fetch-Site': 'same-site',
-              'Sec-CH-UA': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
-              'Sec-CH-UA-Mobile': '?0',
-              'Sec-CH-UA-Platform': '"Windows"',
-              'Cache-Control': 'no-cache',
-              'Pragma': 'no-cache',
-              'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify({
-              input: modelParams,
-              webhook_completed: null
-            })
-          }
-          
-          if (agent) {
-            // @ts-ignore
-            fetchOptions.agent = agent
-          }
-          
-          try {
-            const response = await fetch('https://api.replicate.com/v1/models/black-forest-labs/flux-1.1-pro/predictions', fetchOptions)
-            
-            if (!response.ok) {
-              if (response.status === 403) {
-                console.log(`🚫 403 Forbidden with ${proxyUrl || 'direct connection'}`)
-                return null
-              }
-              throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-            }
-            
-            console.log(`✅ Success with ${proxyUrl || 'direct connection'}`)
-            return response
-          } catch (error) {
-            console.log(`❌ Request failed with ${proxyUrl || 'direct connection'}:`, error.message)
-            return null
-          }
-        }
-        
-        // 1차: 직접 연결 시도
-        let response = await makeRequest()
-        
-        // 2차: 프록시들을 순차적으로 시도
-        if (!response) {
-          console.log('🔄 Direct connection failed, trying proxies...')
-          for (const proxy of freeProxies) {
-            response = await makeRequest(proxy)
-            if (response) break
-            
-            // 프록시간 딜레이
-            await new Promise(resolve => setTimeout(resolve, 1000))
-          }
-        }
-        
-        if (!response) {
-          throw new Error('All proxy attempts failed')
-        }
-        
-        const prediction = await response.json()
-        console.log(`🎯 Prediction created: ${prediction.id}`)
-        
-        // Poll for completion with same proxy strategy
-        let result = prediction
-        let pollCount = 0
-        const maxPolls = 90 // 3분 최대 (2초 간격)
-        
-        while ((result.status === 'starting' || result.status === 'processing') && pollCount < maxPolls) {
-          await new Promise(resolve => setTimeout(resolve, 2000))
-          pollCount++
-          
-          // 폴링도 프록시를 통해 시도
-          const pollWithProxy = async () => {
-            for (const proxy of ['', ...freeProxies]) {
-              try {
-                let agent = undefined
-                if (proxy) {
-                  agent = new HttpsProxyAgent(proxy)
-                }
-                
-                const fetchOptions = {
-                  headers: {
-                    'Authorization': `Bearer ${replicateApiToken}`,
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                  }
-                }
-                
-                if (agent) {
-                  // @ts-ignore
-                  fetchOptions.agent = agent
-                }
-                
-                const pollResponse = await fetch(`https://api.replicate.com/v1/predictions/${result.id}`, fetchOptions)
-                
-                if (pollResponse.ok) {
-                  return pollResponse
-                }
-              } catch (error) {
-                console.log(`Polling proxy ${proxy || 'direct'} failed:`, error.message)
-              }
-            }
-            throw new Error('All polling attempts failed')
-          }
-          
-          const pollResponse = await pollWithProxy()
-          
-          result = await pollResponse.json()
-          console.log(`📊 Poll ${pollCount}: Status = ${result.status}`)
-        }
-
-        if (result.status === 'succeeded') {
-          return result.output
-        } else {
-          throw new Error(`Generation failed: ${result.error || 'Timeout or unknown error'}`)
-        }
+        return output
       }
       
-      const imageGenerationPromise = proxyApiCall()
+      const imageGenerationPromise = directApiCall()
       
-      console.log('🕐 Starting replicate.run...')
+      console.log('🕐 Starting Replicate API call...')
       const output = await Promise.race([imageGenerationPromise, timeoutPromise])
-      console.log('🕐 Replicate.run completed')
+      console.log('🕐 Replicate API call completed')
 
       console.log('🔍 Replicate output type:', typeof output)
       console.log('🔍 Replicate output value:', JSON.stringify(output, null, 2))
 
-      // Replicate 출력 형식 처리 (FileOutput 지원)
+      // Replicate 출력 형식 처리 (Cloudflare Gateway 통과)
       if (output) {
-        if (output && typeof output === 'object' && output.constructor && output.constructor.name === 'FileOutput') {
-          console.log('✅ Found FileOutput object')
-          const fileOutput = output as any; // 타입 안전성을 위해 any로 캐스팅
-          if (fileOutput.url && typeof fileOutput.url === 'function') {
-            console.log('🔍 Calling FileOutput.url() function...')
-            const urlResult = await fileOutput.url()
-            imageUrl = urlResult.toString() // URL 객체를 문자열로 변환
-            console.log('✅ Successfully extracted URL from FileOutput')
-          } else {
-            throw new Error('FileOutput object does not have url() function')
-          }
-        } else if (Array.isArray(output) && output.length > 0) {
-          const firstOutput = output[0]
-          
-          // FileOutput 처리
-          if (firstOutput && typeof firstOutput === 'object' && firstOutput.constructor && firstOutput.constructor.name === 'FileOutput') {
-            console.log('✅ Found FileOutput in array')
-            const fileOutput = firstOutput as any; // 타입 안전성을 위해 any로 캐스팅
-            if (fileOutput.url && typeof fileOutput.url === 'function') {
-              const urlResult = await fileOutput.url()
-              imageUrl = urlResult.toString()
-            } else {
-              throw new Error('FileOutput in array does not have url() function')
-            }
-          }
-          // ReadableStream 처리
-          else if (firstOutput && typeof firstOutput === 'object' && firstOutput.constructor.name === 'ReadableStream') {
-            console.log('🔍 Found ReadableStream, converting to blob URL...')
-            
-            // ReadableStream을 Blob으로 변환
-            const response = new Response(firstOutput)
-            const blob = await response.blob()
-            const arrayBuffer = await blob.arrayBuffer()
-            
-            // Base64로 인코딩하여 data URL 생성
-            const base64 = Buffer.from(arrayBuffer).toString('base64')
-            imageUrl = `data:image/jpeg;base64,${base64}`
-            
-            console.log('✅ ReadableStream converted to data URL')
-          } else if (typeof firstOutput === 'string') {
-            imageUrl = firstOutput
-          } else {
-            console.log('🔍 First output type:', typeof firstOutput)
-            console.log('🔍 First output constructor:', firstOutput?.constructor?.name)
-            throw new Error(`Unexpected first output format: ${typeof firstOutput}`)
-          }
+        if (Array.isArray(output) && output.length > 0) {
+          // 배열 형태 (일반적인 경우)
+          imageUrl = output[0]
+          console.log('✅ Found URL in array format')
         } else if (typeof output === 'string') {
+          // 직접 URL 문자열
           imageUrl = output
-        } else if (typeof output === 'object' && output !== null) {
-          // 객체 형태인 경우 가능한 URL 필드들 체크
-          const possibleUrlFields = ['url', 'image', 'image_url', 'output', 'result']
-          const outputObj = output as Record<string, any>
-          for (const field of possibleUrlFields) {
-            if (outputObj[field]) {
-              imageUrl = outputObj[field]
-              break
-            }
-          }
-          if (!imageUrl) {
-            console.log('🔍 Object output structure:', Object.keys(outputObj))
-            console.log('🔍 Object constructor:', outputObj.constructor?.name)
-            throw new Error(`Unable to extract image URL from object: ${JSON.stringify(outputObj)}`)
-          }
+          console.log('✅ Found direct URL string')
         } else {
           console.log('🔍 Unexpected output format:', output)
           throw new Error(`Unexpected output format from Replicate: ${typeof output}`)
         }
-        console.log('✅ Image generation successful with Replicate')
+        console.log('✅ Image generation successful')
         console.log('🔗 Final image URL:', imageUrl)
       } else {
         throw new Error('No image output received from Replicate')

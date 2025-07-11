@@ -9,6 +9,15 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+
+  // Webpack 설정 추가 (모듈 해결 문제 해결)
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': require('path').resolve(__dirname, 'src'),
+    }
+    return config
+  },
   
   // 이미지 최적화 설정
   images: {

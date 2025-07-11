@@ -1,12 +1,18 @@
 "use client"
 
-import { motion } from "framer-motion"
+import { useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { GlassCard } from "../ui/glass-card"
 import { NeonButton } from "../ui/neon-button"
 import { Input } from "../ui/input"
-import { ArrowRight, Sparkles, Zap, Github } from "lucide-react"
+import { ArrowRight, Sparkles, Zap, Github, X } from "lucide-react"
 
 export function CtaSection() {
+  const [showComingSoonModal, setShowComingSoonModal] = useState(false)
+
+  const handleComingSoonClick = () => {
+    setShowComingSoonModal(true)
+  }
   return (
     <section className="py-20 px-4 relative overflow-hidden">
       {/* Background Effects */}
@@ -62,9 +68,11 @@ export function CtaSection() {
               >
                 <Input 
                   placeholder="Enter your email"
-                  className="flex-1 bg-black/50 border-purple-500/30 focus:border-purple-500"
+                  className="flex-1 bg-black/50 border-purple-500/30 focus:border-purple-500 cursor-pointer"
+                  onClick={handleComingSoonClick}
+                  readOnly
                 />
-                <NeonButton size="lg" className="w-full sm:w-auto">
+                <NeonButton size="lg" className="w-full sm:w-auto" onClick={handleComingSoonClick}>
                   Get Started Free
                   <ArrowRight className="w-4 h-4" />
                 </NeonButton>
@@ -77,11 +85,11 @@ export function CtaSection() {
                 viewport={{ once: true }}
                 className="flex flex-col sm:flex-row gap-4 justify-center items-center"
               >
-                <NeonButton variant="ghost" size="lg">
+                <NeonButton variant="ghost" size="lg" onClick={handleComingSoonClick}>
                   <Zap className="w-5 h-5" />
                   Try Demo
                 </NeonButton>
-                <NeonButton variant="outline" size="lg">
+                <NeonButton variant="outline" size="lg" onClick={handleComingSoonClick}>
                   <Github className="w-5 h-5" />
                   View on GitHub
                 </NeonButton>
@@ -121,6 +129,59 @@ export function CtaSection() {
           </div>
         </motion.footer>
       </div>
+
+      {/* Coming Soon Modal */}
+      <AnimatePresence>
+        {showComingSoonModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => setShowComingSoonModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.7, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.7, opacity: 0 }}
+              className="bg-gray-900 rounded-2xl border border-gray-700 p-8 max-w-md w-full relative shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setShowComingSoonModal(false)}
+                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {/* Modal Content */}
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-6">
+                  <Sparkles className="w-8 h-8 text-purple-400" />
+                </div>
+                
+                <h3 className="text-2xl font-bold text-white mb-4">
+                  Coming Soon!
+                </h3>
+                
+                <p className="text-gray-400 mb-6 leading-relaxed">
+                  We're working hard to bring you this amazing feature. 
+                  Stay tuned for updates and be the first to know when it's ready!
+                </p>
+                
+                <NeonButton 
+                  size="lg" 
+                  className="w-full"
+                  onClick={() => setShowComingSoonModal(false)}
+                >
+                  Got it!
+                </NeonButton>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   )
 }

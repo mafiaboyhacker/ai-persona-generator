@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { ChevronLeft, ChevronRight, X, ZoomIn, User, Sparkles, Bot, FileText, Image } from "lucide-react"
+import { ChevronLeft, ChevronRight, X, ZoomIn, User, Sparkles, Bot, FileText, Image, ToggleLeft, ToggleRight } from "lucide-react"
 
 export function CodeDemoSection() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
@@ -16,6 +16,17 @@ export function CodeDemoSection() {
     '/videos/lala.mp4'
   ])
   
+  // 360도 뷰어 시스템
+  const [viewer360Pairs] = useState([
+    { id: '360_1', image: '/gallery/360_1.png', video: '/videos/360_1.mp4' },
+    { id: '360_2', image: '/gallery/360_2.png', video: '/videos/360_2.mp4' }
+    // 추후 더 많은 페어 추가 가능
+  ])
+  const [selectedPair, setSelectedPair] = useState('360_1')
+  const [showVideoModal, setShowVideoModal] = useState(false)
+  const [modalSelectedPair, setModalSelectedPair] = useState('360_1')
+  const [current360Index, setCurrent360Index] = useState(0)
+  
   // 클라이언트 전용 상태 관리
   const [isClient, setIsClient] = useState(false)
   const [windowDimensions, setWindowDimensions] = useState({
@@ -23,6 +34,7 @@ export function CodeDemoSection() {
     height: 800
   })
   const [imageLoading, setImageLoading] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   
   // 노드 위치 상태 관리
   const [nodePositions, setNodePositions] = useState({
@@ -117,10 +129,10 @@ export function CodeDemoSection() {
   useEffect(() => {
     setIsClient(true)
     const updateWindowDimensions = () => {
-      setWindowDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight
-      })
+      const width = window.innerWidth
+      const height = window.innerHeight
+      setWindowDimensions({ width, height })
+      setIsMobile(width < 768)
     }
     
     updateWindowDimensions()
@@ -231,6 +243,23 @@ export function CodeDemoSection() {
     scheduleNextVideo()
   }, [currentVideoIndex, videoSources.length])
 
+  // 360도 영상 자동 순환 (6초마다)
+  useEffect(() => {
+    if (viewer360Pairs.length === 0) return
+    
+    const interval = setInterval(() => {
+      setCurrent360Index(prev => {
+        const nextIndex = (prev + 1) % viewer360Pairs.length
+        const nextPair = viewer360Pairs[nextIndex]
+        setSelectedPair(nextPair.id)
+        console.log(`Auto switching to 360 pair: ${nextPair.id}`)
+        return nextIndex
+      })
+    }, 6000) // 6초마다 전환
+    
+    return () => clearInterval(interval)
+  }, [viewer360Pairs.length])
+
   const openModal = () => {
     if (galleryImages[currentImageIndex]) {
       setSelectedImage(galleryImages[currentImageIndex])
@@ -283,7 +312,7 @@ export function CodeDemoSection() {
           </div>
 
           {/* 메인 플로우 영역 */}
-          <div ref={containerRef} className="relative min-h-[600px] mb-16">
+          <div ref={containerRef} className={`relative mb-16 ${isMobile ? 'min-h-[1400px]' : 'min-h-[600px]'}`}>
             {!isClient && (
               <div className="flex items-center justify-center min-h-[600px]">
                 <div className="text-white text-lg">Loading interactive demo...</div>
@@ -294,47 +323,103 @@ export function CodeDemoSection() {
             {/* SVG 연결선들 - 동적 업데이트 */}
             <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1 }}>
               <defs>
-                <linearGradient id="connectionGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+                <linearGradient id="connectionGradient1" x1="0%" y1="0%" x2={isMobile ? "0%" : "100%"} y2={isMobile ? "100%" : "0%"}>
                   <stop offset="0%" stopColor="#8B5CF6" />
                   <stop offset="100%" stopColor="#3B82F6" />
                 </linearGradient>
-                <linearGradient id="connectionGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+                <linearGradient id="connectionGradient2" x1="0%" y1="0%" x2={isMobile ? "0%" : "100%"} y2={isMobile ? "100%" : "0%"}>
                   <stop offset="0%" stopColor="#3B82F6" />
                   <stop offset="100%" stopColor="#10B981" />
                 </linearGradient>
               </defs>
               
-              {/* User to Agent 연결선 */}
-              <motion.path
-                animate={{
-                  d: calculateConnectionPath(
-                    getNodeConnectionPoint('user', 'right'),
-                    getNodeConnectionPoint('agent', 'left')
-                  )
-                }}
-                stroke="url(#connectionGradient1)"
-                strokeWidth="2"
-                fill="none"
-                transition={{ type: "spring", stiffness: 500, damping: 20 }}
-                className="drop-shadow-lg"
-              />
+              {!isMobile && (
+                <>
+                  {/* User to Agent 연결선 - 데스크톱만 */}
+                  <motion.path
+                    animate={{
+                      d: calculateConnectionPath(
+                        getNodeConnectionPoint('user', 'right'),
+                        getNodeConnectionPoint('agent', 'left')
+                      )
+                    }}
+                    stroke="url(#connectionGradient1)"
+                    strokeWidth="2"
+                    fill="none"
+                    transition={{ type: "spring", stiffness: 500, damping: 20 }}
+                    className="drop-shadow-lg"
+                  />
+                  
+                  {/* Agent to Result 연결선 - 데스크톱만 */}
+                  <motion.path
+                    animate={{
+                      d: calculateConnectionPath(
+                        getNodeConnectionPoint('agent', 'right'),
+                        getNodeConnectionPoint('result', 'left')
+                      )
+                    }}
+                    stroke="url(#connectionGradient2)"
+                    strokeWidth="2"
+                    fill="none"
+                    transition={{ type: "spring", stiffness: 500, damping: 20 }}
+                    className="drop-shadow-lg"
+                  />
+                </>
+              )}
               
-              {/* Agent to Result 연결선 */}
-              <motion.path
-                animate={{
-                  d: calculateConnectionPath(
-                    getNodeConnectionPoint('agent', 'right'),
-                    getNodeConnectionPoint('result', 'left')
-                  )
-                }}
-                stroke="url(#connectionGradient2)"
-                strokeWidth="2"
-                fill="none"
-                transition={{ type: "spring", stiffness: 500, damping: 20 }}
-                className="drop-shadow-lg"
-              />
-              
-              
+              {isMobile && (
+                <>
+                  {/* 모바일 수직 연결선 1: User to Agent */}
+                  <motion.line
+                    x1={windowDimensions.width / 2}
+                    y1="200"
+                    x2={windowDimensions.width / 2}
+                    y2="280"
+                    stroke="url(#connectionGradient1)"
+                    strokeWidth="3"
+                    className="drop-shadow-lg"
+                    strokeDasharray="8,4"
+                    initial={{ strokeDashoffset: 100, opacity: 0 }}
+                    animate={{ strokeDashoffset: 0, opacity: 1 }}
+                    transition={{ duration: 1, delay: 0.8 }}
+                  />
+                  
+                  {/* 모바일 화살표 1 */}
+                  <motion.polygon
+                    points={`${windowDimensions.width / 2 - 6},270 ${windowDimensions.width / 2 + 6},270 ${windowDimensions.width / 2},285`}
+                    fill="#3B82F6"
+                    className="drop-shadow-lg"
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, delay: 1.2 }}
+                  />
+                  
+                  {/* 모바일 수직 연결선 2: Agent to Result */}
+                  <motion.line
+                    x1={windowDimensions.width / 2}
+                    y1="640"
+                    x2={windowDimensions.width / 2}
+                    y2="720"
+                    stroke="url(#connectionGradient2)"
+                    strokeWidth="3"
+                    className="drop-shadow-lg"
+                    strokeDasharray="8,4"
+                    initial={{ strokeDashoffset: 100, opacity: 0 }}
+                    animate={{ strokeDashoffset: 0, opacity: 1 }}
+                    transition={{ duration: 1, delay: 1.4 }}
+                  />
+                  
+                  {/* 모바일 화살표 2 */}
+                  <motion.polygon
+                    points={`${windowDimensions.width / 2 - 6},710 ${windowDimensions.width / 2 + 6},710 ${windowDimensions.width / 2},725`}
+                    fill="#10B981"
+                    className="drop-shadow-lg"
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, delay: 1.8 }}
+                  />
+                </>
+              )}
             </svg>
 
             {/* 플로우 카드들 */}
@@ -342,18 +427,23 @@ export function CodeDemoSection() {
               {/* User 카드 - 드래그 가능 */}
               <motion.div
                 ref={userNodeRef}
-                className="absolute cursor-move"
-                style={{ 
+                className={isMobile ? "absolute" : "absolute cursor-move"}
+                style={isMobile ? { 
+                  top: 16, 
+                  left: 16,
+                  width: 'calc(100vw - 32px)',
+                  maxWidth: '320px'
+                } : { 
                   top: nodePositions.user.y, 
                   left: nodePositions.user.x 
                 }}
                 initial={{ opacity: 0, x: -50 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8 }}
-                drag
+                drag={!isMobile}
                 dragMomentum={false}
                 dragElastic={0.1}
-                onDrag={(event, info) => {
+                onDrag={isMobile ? undefined : (event, info) => {
                   setNodePositions(prev => ({
                     ...prev,
                     user: {
@@ -364,9 +454,9 @@ export function CodeDemoSection() {
                   // 드래그 중 실시간 위치 업데이트
                   requestAnimationFrame(measureNodePositions)
                 }}
-                whileDrag={{ scale: 1.05, zIndex: 1000 }}
+                whileDrag={isMobile ? {} : { scale: 1.05, zIndex: 1000 }}
               >
-                <div className="bg-gray-800 rounded-2xl p-6 w-80 border border-gray-700">
+                <div className={`bg-gray-800 rounded-2xl p-6 border border-gray-700 ${isMobile ? 'w-full' : 'w-80'}`}>
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center">
                       <User className="w-5 h-5 text-white" />
@@ -382,18 +472,23 @@ export function CodeDemoSection() {
               {/* AI Agent 카드 - 드래그 가능 */}
               <motion.div
                 ref={agentNodeRef}
-                className="absolute cursor-move"
-                style={{ 
+                className={isMobile ? "absolute" : "absolute cursor-move"}
+                style={isMobile ? { 
+                  top: 280, 
+                  left: 16,
+                  width: 'calc(100vw - 32px)',
+                  maxWidth: '384px'
+                } : { 
                   top: nodePositions.agent.y, 
                   left: `calc(50% - 192px + ${nodePositions.agent.x}px)` 
                 }}
                 initial={{ opacity: 0, y: -50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.3 }}
-                drag
+                drag={!isMobile}
                 dragMomentum={false}
                 dragElastic={0.1}
-                onDrag={(event, info) => {
+                onDrag={isMobile ? undefined : (event, info) => {
                   setNodePositions(prev => ({
                     ...prev,
                     agent: {
@@ -404,9 +499,9 @@ export function CodeDemoSection() {
                   // 드래그 중 실시간 위치 업데이트
                   requestAnimationFrame(measureNodePositions)
                 }}
-                whileDrag={{ scale: 1.05, zIndex: 1000 }}
+                whileDrag={isMobile ? {} : { scale: 1.05, zIndex: 1000 }}
               >
-                <div className="bg-gray-900 rounded-2xl p-6 w-96 border border-purple-500/50 shadow-2xl shadow-purple-500/20">
+                <div className={`bg-gray-900 rounded-2xl p-6 border border-purple-500/50 shadow-2xl shadow-purple-500/20 ${isMobile ? 'w-full' : 'w-96'}`}>
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center">
                       <Bot className="w-6 h-6 text-white" />
@@ -464,18 +559,23 @@ export function CodeDemoSection() {
               {/* Generated Result 카드 - 드래그 가능 */}
               <motion.div
                 ref={resultNodeRef}
-                className="absolute cursor-move"
-                style={{ 
+                className={isMobile ? "absolute" : "absolute cursor-move"}
+                style={isMobile ? { 
+                  top: 720, 
+                  left: 16,
+                  width: 'calc(100vw - 32px)',
+                  maxWidth: '384px'
+                } : { 
                   top: nodePositions.result.y, 
                   right: `${32 - nodePositions.result.x}px` 
                 }}
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.6 }}
-                drag
+                drag={!isMobile}
                 dragMomentum={false}
                 dragElastic={0.1}
-                onDrag={(event, info) => {
+                onDrag={isMobile ? undefined : (event, info) => {
                   setNodePositions(prev => ({
                     ...prev,
                     result: {
@@ -486,9 +586,9 @@ export function CodeDemoSection() {
                   // 드래그 중 실시간 위치 업데이트
                   requestAnimationFrame(measureNodePositions)
                 }}
-                whileDrag={{ scale: 1.05, zIndex: 1000 }}
+                whileDrag={isMobile ? {} : { scale: 1.05, zIndex: 1000 }}
               >
-                <div className="bg-gray-800 rounded-2xl p-6 w-96 border border-green-500/50 shadow-2xl shadow-green-500/20">
+                <div className={`bg-gray-800 rounded-2xl p-6 border border-green-500/50 shadow-2xl shadow-green-500/20 ${isMobile ? 'w-full' : 'w-96'}`}>
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center">
                       <Sparkles className="w-5 h-5 text-white" />
@@ -569,12 +669,140 @@ export function CodeDemoSection() {
             )}
           </div>
 
+          {/* 360도 페르소나 뷰어 */}
+          <motion.div
+            className="mb-20"
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1 }}
+          >
+            <div className="text-center mb-8">
+              <h3 className="text-3xl font-bold text-white mb-4">
+                Persona-v.01 AI Training
+              </h3>
+              <p className="text-gray-400 max-w-3xl mx-auto">
+                After generating personas, train images with Persona-v.01 AI to bring personas to life and create realistic implementations
+              </p>
+            </div>
+
+            <div className="max-w-7xl mx-auto">
+              <div className={`relative ${isMobile ? 'flex flex-col items-center gap-8' : 'flex items-center justify-center gap-12'}`}>
+                {/* 왼쪽: 썸네일 그리드 */}
+                <div className="space-y-6">
+                  <h4 className="text-xl font-semibold text-white text-center">Generated Personas</h4>
+                  <div className={`grid gap-6 ${isMobile ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                    {viewer360Pairs.map((pair) => (
+                      <motion.div
+                        key={pair.id}
+                        className={`relative ${isMobile ? 'w-32 h-32' : 'w-48 h-48'} rounded-2xl overflow-hidden cursor-pointer border-2 transition-all duration-300 ${
+                          selectedPair === pair.id 
+                            ? 'border-purple-500 ring-4 ring-purple-500/40 shadow-2xl shadow-purple-500/30' 
+                            : 'border-gray-600 hover:border-gray-400'
+                        }`}
+                        onClick={() => {
+                          console.log(`Selecting pair: ${pair.id}, video: ${pair.video}`)
+                          setSelectedPair(pair.id)
+                          setModalSelectedPair(pair.id)
+                          setShowVideoModal(true)
+                        }}
+                        whileHover={{ scale: 1.08 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <img
+                          src={pair.image}
+                          alt={`Persona ${pair.id}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 화살표 연결선 */}
+                {!isMobile && (
+                  <div className="flex items-center">
+                    <motion.div
+                      className="flex items-center gap-2"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.8, delay: 1 }}
+                    >
+                      <div className="w-16 h-0.5 bg-gradient-to-r from-purple-500 to-blue-500"></div>
+                      <div className="w-0 h-0 border-l-8 border-l-blue-500 border-t-4 border-t-transparent border-b-4 border-b-transparent"></div>
+                      <div className="w-16 h-0.5 bg-gradient-to-r from-blue-500 to-green-500"></div>
+                    </motion.div>
+                  </div>
+                )}
+
+                {/* 모바일 화살표 */}
+                {isMobile && (
+                  <div className="flex justify-center">
+                    <motion.div
+                      className="flex flex-col items-center gap-2"
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.8, delay: 1 }}
+                    >
+                      <div className="h-8 w-0.5 bg-gradient-to-b from-purple-500 to-blue-500"></div>
+                      <div className="w-0 h-0 border-t-8 border-t-blue-500 border-l-4 border-l-transparent border-r-4 border-r-transparent"></div>
+                      <div className="h-8 w-0.5 bg-gradient-to-b from-blue-500 to-green-500"></div>
+                    </motion.div>
+                  </div>
+                )}
+
+                {/* 오른쪽: 360도 비디오 플레이어 */}
+                <div className="space-y-6">
+                  <h4 className="text-xl font-semibold text-white text-center">Persona-v.01 Training</h4>
+                  <div 
+                    className={`relative ${isMobile ? 'w-80 h-60' : 'w-96 h-72'} rounded-2xl overflow-hidden bg-gray-900 border border-gray-600 shadow-2xl cursor-pointer`}
+                    onClick={() => {
+                      setModalSelectedPair(selectedPair)
+                      setShowVideoModal(true)
+                    }}
+                  >
+                    {selectedPair && (
+                      <video
+                        key={`video-${selectedPair}`}
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        className="w-full h-full object-contain"
+                        style={{ transform: 'translateY(-4.3%)' }}
+                        src={viewer360Pairs.find(p => p.id === selectedPair)?.video}
+                        onLoadStart={() => console.log(`Loading video for ${selectedPair}:`, viewer360Pairs.find(p => p.id === selectedPair)?.video)}
+                      />
+                    )}
+                  </div>
+                  
+                  {/* 비디오 오버레이 - 비디오 아래로 이동 (더 투명하게) */}
+                  <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 border border-white/10">
+                    <div className="flex items-center justify-between">
+                      <div className="text-white">
+                        <div className="font-semibold text-sm">
+                          {selectedPair ? `Persona ${selectedPair}` : 'Select a persona'}
+                        </div>
+                        <div className="text-xs text-gray-300">
+                          AI Training in Progress
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                        <span className="text-white text-xs">AUTO</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
           {/* AI 페르소나 영상 쇼케이스 */}
           <motion.div
             className="text-center"
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1 }}
+            transition={{ duration: 0.8, delay: 1.2 }}
           >
             <h3 className="text-3xl font-bold text-white mb-4">
               Meet Our AI Personas
@@ -728,6 +956,89 @@ export function CodeDemoSection() {
                   <p className="text-gray-300 text-xs mt-1">
                     Use arrow keys or click buttons to navigate
                   </p>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 360도 비디오 팝업 모달 */}
+      <AnimatePresence>
+        {showVideoModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/10 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => setShowVideoModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              className="relative w-full max-w-4xl max-h-[90vh] rounded-2xl overflow-hidden"
+              style={{ transform: 'translateY(-3vh)' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* 닫기 버튼 */}
+              <button
+                onClick={() => setShowVideoModal(false)}
+                className="absolute top-4 right-4 z-20 w-12 h-12 rounded-full bg-black/70 hover:bg-black/90 flex items-center justify-center text-white transition-colors backdrop-blur-sm"
+              >
+                <X className="w-6 h-6" />
+              </button>
+
+              {/* 왼쪽 화살표 버튼 */}
+              <button
+                onClick={() => setModalSelectedPair(modalSelectedPair === '360_1' ? '360_2' : '360_1')}
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-black/70 hover:bg-black/90 flex items-center justify-center text-white transition-all duration-300 backdrop-blur-sm hover:scale-110"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+
+              {/* 오른쪽 화살표 버튼 */}
+              <button
+                onClick={() => setModalSelectedPair(modalSelectedPair === '360_1' ? '360_2' : '360_1')}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-black/70 hover:bg-black/90 flex items-center justify-center text-white transition-all duration-300 backdrop-blur-sm hover:scale-110"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+
+
+              {/* 비디오 플레이어 */}
+              <div className="relative aspect-video bg-black">
+                {modalSelectedPair && (
+                  <video
+                    key={`modal-video-${modalSelectedPair}`}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="w-full h-full object-contain"
+                    style={{ transform: 'translateY(-15%)' }}
+                    src={viewer360Pairs.find(p => p.id === modalSelectedPair)?.video}
+                  />
+                )}
+                
+                {/* 투명 오버레이 - 하단 (더 투명하게) */}
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+                  <div className="bg-black/20 backdrop-blur-sm rounded-lg px-4 py-2 border border-white/10">
+                    <div className="flex items-center justify-between gap-6">
+                      <div className="text-white text-center">
+                        <div className="font-semibold text-sm">
+                          Persona {modalSelectedPair}
+                        </div>
+                        <div className="text-xs text-gray-300">
+                          AI Training in Progress
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                        <span className="text-white text-xs">AUTO</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </motion.div>

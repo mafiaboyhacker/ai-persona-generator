@@ -4,17 +4,17 @@ A cutting-edge AI-powered persona generation platform built with the latest web 
 
 ## 🚀 Tech Stack
 
-- **Frontend**: Next.js 15 with App Router
-- **Styling**: Tailwind CSS v4 + shadcn/ui
+- **Frontend**: Next.js 15.3.5 with App Router
+- **Styling**: Tailwind CSS v4 + shadcn
 - **Animations**: Framer Motion
 - **UI Components**: Radix Primitives
-- **Backend**: Flask (Python) - Separate service
-- **AI Models**: OpenAI GPT-4 + Fal.ai FLUX 1.1 Pro
-- **Deployment**: Vercel (Frontend) + Cloud hosting (Backend)
+- **Backend**: Next.js API Routes (No separate backend)
+- **AI Models**: OpenAI GPT-4o-mini + Replicate FLUX 1.1 Pro
+- **Deployment**: Railway.app with GitHub auto-deployment
 
 ## ✨ Features
 
-- **🧠 Advanced AI**: Powered by GPT-4 and FLUX 1.1 Pro for highest quality
+- **🧠 Advanced AI**: Powered by GPT-4o-mini and FLUX 1.1 Pro for highest quality
 - **⚡ Lightning Fast**: Generate detailed personas in under 30 seconds
 - **🎨 Stunning Design**: Langflow-inspired neon-dark theme with glassmorphism
 - **📱 Responsive**: Perfect on desktop, tablet, and mobile
@@ -95,17 +95,18 @@ persona-frontend/
 ### Environment Variables
 Create a `.env.local` file:
 ```env
-NEXT_PUBLIC_API_URL=https://your-backend-url.com
+OPENAI_API_KEY=your_openai_api_key_here
+REPLICATE_API_TOKEN=your_replicate_api_token_here
 ```
 
-## 📦 Backend Integration
+## 📦 API Integration
 
-The frontend connects to a Flask backend service that handles:
-- AI persona generation via OpenAI API
-- Image generation via Fal.ai API
-- Data processing and storage
+The application uses Next.js API Routes for:
+- AI persona generation via OpenAI GPT-4o-mini
+- Image generation via Replicate FLUX 1.1 Pro
+- Real-time processing and response handling
 
-Backend repository: `server.py` (in parent directory)
+API endpoint: `/api/generate-complete-persona`
 
 ## 🛠️ Development Commands
 
@@ -125,9 +126,11 @@ npm run lint
 
 ## 🚀 Deployment
 
-### Vercel (Recommended)
-1. Connect your GitHub repository to Vercel
-2. Set environment variables in Vercel dashboard
+### Railway.app (Current)
+1. Connect your GitHub repository to Railway
+2. Set environment variables in Railway dashboard:
+   - `OPENAI_API_KEY`
+   - `REPLICATE_API_TOKEN`
 3. Deploy automatically on git push
 
 ### Manual Deployment

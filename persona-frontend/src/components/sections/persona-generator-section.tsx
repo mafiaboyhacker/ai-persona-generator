@@ -1200,7 +1200,7 @@ export function PersonaGeneratorSection() {
           </h2>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
             Create detailed AI personas with full customization. From personality traits 
-            to visual characteristics, every aspect is under your control.
+            to visual, The persona's prompt may cause an error. It's a space that's not complete yet.
           </p>
         </motion.div>
 
@@ -1391,7 +1391,7 @@ export function PersonaGeneratorSection() {
                 <div className="flex items-center justify-center py-20">
                   <div className="text-center">
                     <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-purple-400" />
-                    <p className="text-gray-400">Generating your AI persona...1~3 minutes</p>
+                    <p className="text-gray-400">Generating your AI persona...1~3 minutes! The persona's prompt may cause an error. It's a space that's not complete yet</p>
                   </div>
                 </div>
               ) : generatedPersona ? (
