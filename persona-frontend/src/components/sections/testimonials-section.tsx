@@ -6,30 +6,30 @@ import { Star, Quote } from "lucide-react"
 
 const testimonials = [
   {
-    name: "Sarah Chen",
-    role: "Creative Director",
-    company: "DigitalArts Studio",
-    content: "This tool has revolutionized our character development process. We can now create detailed personas in minutes instead of hours.",
+    name: "Alex Kim",
+    role: "AI Influencer Manager",
+    company: "StarStream Agency",
+    content: "Game-changer for entertainment industry! Created 5 AI influencers in one day with unique personalities and stunning visuals. Our clients love the professional quality.",
     rating: 5,
-    avatar: "SC",
+    avatar: "AK",
     gradient: "from-purple-400 to-pink-400"
   },
   {
-    name: "Marcus Rodriguez",
-    role: "Game Developer",
-    company: "Indie Games Co.",
-    content: "The quality of AI-generated characters is outstanding. Perfect for rapid prototyping and concept development.",
+    name: "Maya Rodriguez",
+    role: "VTuber Producer",
+    company: "Virtual Stars Studio",
+    content: "Perfect for VTuber character creation! The AI personas have such depth and authenticity. Our talent auditions now include AI-generated backstories.",
     rating: 5,
     avatar: "MR",
     gradient: "from-teal-400 to-blue-400"
   },
   {
-    name: "Emily Watson",
-    role: "Content Creator",
-    company: "StreamVibe",
-    content: "I use this for creating unique characters for my stories. The detail and creativity level is simply amazing.",
+    name: "David Park",
+    role: "Music Producer",
+    company: "NextGen Entertainment",
+    content: "Revolutionary for AI singer development. Created complete artist personas with visual identity in minutes. The entertainment industry needs this!",
     rating: 5,
-    avatar: "EW",
+    avatar: "DP",
     gradient: "from-orange-400 to-red-400"
   }
 ]
@@ -56,11 +56,11 @@ export function TestimonialsSection() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Loved by <span className="neon-text">Creators</span>
+            Trusted by <span className="neon-text">Entertainment Pros</span>
           </h2>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Join thousands of creators, developers, and artists who are already 
-            using AI Persona Generator to bring their ideas to life.
+            Join entertainment industry professionals who are revolutionizing content creation 
+            with AI influencers, actors, singers, and VTubers.
           </p>
         </motion.div>
 
@@ -110,7 +110,7 @@ export function TestimonialsSection() {
           className="text-center"
         >
           <div className="text-sm text-gray-400 mb-8">
-            Trusted by teams from leading companies
+            Powering the future of entertainment industry
           </div>
           
           <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
@@ -152,8 +152,8 @@ export function TestimonialsSection() {
                   ))}
                 </div>
                 <div className="text-left">
-                  <div className="font-semibold">5,000+ Active Users</div>
-                  <div className="text-sm text-gray-400">Join the community</div>
+                  <div className="font-semibold">5,000+ Entertainment Pros</div>
+                  <div className="text-sm text-gray-400">Industry leaders trust us</div>
                 </div>
               </div>
               

@@ -38,21 +38,22 @@ export function HeroSection() {
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 mb-8">
             <Sparkles className="w-4 h-4 text-purple-400" />
-            <span className="text-sm text-purple-300">AI-Powered Persona Generation</span>
+            <span className="text-sm text-purple-300">Next-Gen Entertainment AI</span>
           </div>
           
           <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-            Create{" "}
+            Shape the{" "}
             <span className="neon-text bg-gradient-to-r from-purple-400 to-teal-400 bg-clip-text text-transparent">
-            AI Personas
+            Entertainment
             </span>
             <br />
-            Persona-LLM and Persona-v.01
+            Future with AI
           </h1>
           
           <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
-            Stop fighting your tools. Generate detailed, unique AI personas with advanced 
-            character profiles and stunning visuals in seconds.
+            Power the future of entertainment. Create professional AI influencers, actors, singers, 
+            VTubers, and content creators with industry-grade character profiles and breathtaking 
+            visuals in seconds.
           </p>
         </motion.div>
 
@@ -100,8 +101,8 @@ export function HeroSection() {
             <div className="w-12 h-12 rounded-full bg-teal-500/20 flex items-center justify-center mx-auto mb-4">
               <Zap className="w-6 h-6 text-teal-400" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">Lightning Fast</h3>
-            <p className="text-sm text-gray-400">Generate complete personas in under 30 seconds</p>
+            <h3 className="text-lg font-semibold mb-2">Business</h3>
+            <p className="text-sm text-gray-400">Entertainment's current AI industry</p>
           </GlassCard>
 
           <GlassCard className="p-6 text-center hover:scale-105 transition-transform duration-300" glow>

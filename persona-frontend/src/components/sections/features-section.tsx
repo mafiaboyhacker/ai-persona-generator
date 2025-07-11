@@ -15,44 +15,44 @@ import {
 const features = [
   {
     icon: Brain,
-    title: "Advanced AI Models",
-    description: "Powered by Persona-LLM and Persona-v.01 for the highest quality persona generation",
-    tags: ["Persona-LLM", "Persona-v.01"],
+    title: "Entertainment-Grade AI",
+    description: "Powered by Persona-LLM and Persona-v.01 for industry-standard AI influencers, actors, and singers",
+    tags: ["Industry-Grade", "Professional", "AI Stars"],
     color: "purple"
   },
   {
     icon: Zap,
-    title: "Lightning Performance",
-    description: "Generate detailed personas with images in under 30 seconds",
-    tags: ["Fast", "Optimized", "Cached"],
+    title: "Instant Star Creation",
+    description: "Launch AI influencers with complete backstories and visuals in under 30 seconds",
+    tags: ["Instant", "Professional", "Ready-to-Use"],
     color: "yellow"
   },
   {
     icon: Palette,
-    title: "Unlimited Customization",
-    description: "Control every aspect from personality traits to visual characteristics",
-    tags: ["Flexible", "Custom", "Detailed"],
+    title: "Total Character Control",
+    description: "Craft unique AI personalities, appearances, and backstories for any entertainment genre",
+    tags: ["Customizable", "Unique", "Authentic"],
     color: "teal"
   },
   {
     icon: ImageIcon,
-    title: "Stunning Visuals",
-    description: "High-resolution AI-generated images with multiple art styles",
-    tags: ["4K", "Multiple Styles", "Professional"],
+    title: "Star-Quality Visuals",
+    description: "Professional 4K AI-generated portraits perfect for social media, marketing, and content",
+    tags: ["4K Quality", "Social Ready", "Marketing"],
     color: "pink"
   },
   {
     icon: Download,
-    title: "Export & Save",
-    description: "Download personas as PDF, JSON, or share via unique links",
-    tags: ["PDF", "JSON", "Export"],
+    title: "Multi-Platform Export",
+    description: "Deploy AI stars across platforms with downloadable profiles, images, and content packages",
+    tags: ["Multi-Platform", "Content Packs", "Deploy"],
     color: "blue"
   },
   {
     icon: Settings,
-    title: "Advanced Controls",
-    description: "Fine-tune generation parameters, seeds, and model selection",
-    tags: ["Seeds", "Models", "Parameters"],
+    title: "Pro-Level Controls",
+    description: "Fine-tune every detail with advanced parameters for consistent brand-aligned AI characters",
+    tags: ["Brand Control", "Consistency", "Advanced"],
     color: "orange"
   }
 ]
@@ -78,11 +78,11 @@ export function FeaturesSection() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Run, Share and <span className="neon-text">Collaborate</span>
+            Create, Launch and <span className="neon-text">Monetize</span>
           </h2>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Everything you need to create, customize, and share AI personas. 
-            Built for teams, creators, and developers who demand the best.
+            Everything entertainment professionals need to create AI influencers, actors, singers, and VTubers. 
+            Built for agencies, studios, and content creators who demand industry excellence.
           </p>
         </motion.div>
 
@@ -127,19 +127,19 @@ export function FeaturesSection() {
             <div className="grid md:grid-cols-4 gap-8 text-center">
               <div>
                 <div className="text-3xl font-bold neon-text mb-2">10,000+</div>
-                <div className="text-gray-400">Personas Generated</div>
+                <div className="text-gray-400">AI Stars Created</div>
               </div>
               <div>
                 <div className="text-3xl font-bold neon-text mb-2">25s</div>
-                <div className="text-gray-400">Average Generation Time</div>
+                <div className="text-gray-400">Star Launch Time</div>
               </div>
               <div>
                 <div className="text-3xl font-bold neon-text mb-2">99.9%</div>
-                <div className="text-gray-400">Uptime Reliability</div>
+                <div className="text-gray-400">Industry Reliability</div>
               </div>
               <div>
                 <div className="text-3xl font-bold neon-text mb-2">4.9/5</div>
-                <div className="text-gray-400">User Satisfaction</div>
+                <div className="text-gray-400">Entertainment Pro Rating</div>
               </div>
             </div>
           </GlassCard>

@@ -42,20 +42,20 @@ export function CtaSection() {
               >
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/20 border border-purple-500/30 mb-6">
                   <Sparkles className="w-4 h-4 text-purple-400" />
-                  <span className="text-sm text-purple-300">Ready to Get Started?</span>
+                  <span className="text-sm text-purple-300">Join the Entertainment Revolution</span>
                 </div>
 
                 <h2 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-                  Start Creating
+                  Launch Your
                   <br />
                   <span className="neon-text bg-gradient-to-r from-purple-400 to-teal-400 bg-clip-text text-transparent">
-                    Amazing Personas
+                    AI Entertainment Empire
                   </span>
                 </h2>
 
                 <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-                  Join thousands of creators who are already using AI Persona Generator 
-                  to bring their ideas to life. Start for free, no credit card required.
+                  Create professional AI influencers, singers, actors, and VTubers that captivate audiences. 
+                  Join the entertainment industry revolution. Start for free, no credit card required.
                 </p>
               </motion.div>
 
@@ -73,7 +73,7 @@ export function CtaSection() {
                   readOnly
                 />
                 <NeonButton size="lg" className="w-full sm:w-auto" onClick={handleComingSoonClick}>
-                  Get Started Free
+                  Create AI Stars Now
                   <ArrowRight className="w-4 h-4" />
                 </NeonButton>
               </motion.div>
@@ -87,7 +87,7 @@ export function CtaSection() {
               >
                 <NeonButton variant="ghost" size="lg" onClick={handleComingSoonClick}>
                   <Zap className="w-5 h-5" />
-                  Try Demo
+                  See AI Stars Demo
                 </NeonButton>
                 <NeonButton variant="outline" size="lg" onClick={handleComingSoonClick}>
                   <Github className="w-5 h-5" />
@@ -102,7 +102,7 @@ export function CtaSection() {
                 viewport={{ once: true }}
                 className="mt-8 text-sm text-gray-400"
               >
-                Free tier includes 10 persona generations per month. No credit card required.
+                Free tier includes 10 AI character generations per month. Perfect for testing your entertainment concepts.
               </motion.div>
             </div>
           </GlassCard>
@@ -118,7 +118,7 @@ export function CtaSection() {
         >
           <div className="flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-gray-400">
             <div>
-              © 2025 AI Persona Generator. Persona-LLM and Persona-v.01
+              © 2025 AI Persona Generator. Powering the Entertainment Industry with Persona-LLM and Persona-v.01
             </div>
             <div className="flex gap-6">
               <a href="#" className="hover:text-white transition-colors">Privacy</a>
